@@ -1,0 +1,609 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		ACA200EC29822FEC0066399A /* ApduToolApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA200EB29822FEC0066399A /* ApduToolApp.swift */; };
+		ACA200EE29822FEC0066399A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA200ED29822FEC0066399A /* ContentView.swift */; };
+		ACA200F029822FED0066399A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACA200EF29822FED0066399A /* Assets.xcassets */; };
+		ACA200F429822FED0066399A /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACA200F329822FED0066399A /* Preview Assets.xcassets */; };
+		ACA200FE29822FED0066399A /* ApduToolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA200FD29822FED0066399A /* ApduToolTests.swift */; };
+		ACA2010829822FED0066399A /* ApduToolUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2010729822FED0066399A /* ApduToolUITests.swift */; };
+		ACA2010A29822FED0066399A /* ApduToolUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2010929822FED0066399A /* ApduToolUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ACA200FA29822FED0066399A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ACA200E029822FEC0066399A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ACA200E729822FEC0066399A;
+			remoteInfo = ApduTool;
+		};
+		ACA2010429822FED0066399A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ACA200E029822FEC0066399A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ACA200E729822FEC0066399A;
+			remoteInfo = ApduTool;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		ACA200E829822FEC0066399A /* ApduTool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ApduTool.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACA200EB29822FEC0066399A /* ApduToolApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApduToolApp.swift; sourceTree = "<group>"; };
+		ACA200ED29822FEC0066399A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		ACA200EF29822FED0066399A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		ACA200F129822FED0066399A /* ApduTool.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ApduTool.entitlements; sourceTree = "<group>"; };
+		ACA200F329822FED0066399A /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		ACA200F929822FED0066399A /* ApduToolTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ApduToolTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACA200FD29822FED0066399A /* ApduToolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApduToolTests.swift; sourceTree = "<group>"; };
+		ACA2010329822FED0066399A /* ApduToolUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ApduToolUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACA2010729822FED0066399A /* ApduToolUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApduToolUITests.swift; sourceTree = "<group>"; };
+		ACA2010929822FED0066399A /* ApduToolUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApduToolUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		ACA200E529822FEC0066399A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACA200F629822FED0066399A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACA2010029822FED0066399A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		ACA200DF29822FEC0066399A = {
+			isa = PBXGroup;
+			children = (
+				ACA200EA29822FEC0066399A /* ApduTool */,
+				ACA200FC29822FED0066399A /* ApduToolTests */,
+				ACA2010629822FED0066399A /* ApduToolUITests */,
+				ACA200E929822FEC0066399A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ACA200E929822FEC0066399A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ACA200E829822FEC0066399A /* ApduTool.app */,
+				ACA200F929822FED0066399A /* ApduToolTests.xctest */,
+				ACA2010329822FED0066399A /* ApduToolUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ACA200EA29822FEC0066399A /* ApduTool */ = {
+			isa = PBXGroup;
+			children = (
+				ACA200EB29822FEC0066399A /* ApduToolApp.swift */,
+				ACA200ED29822FEC0066399A /* ContentView.swift */,
+				ACA200EF29822FED0066399A /* Assets.xcassets */,
+				ACA200F129822FED0066399A /* ApduTool.entitlements */,
+				ACA200F229822FED0066399A /* Preview Content */,
+			);
+			path = ApduTool;
+			sourceTree = "<group>";
+		};
+		ACA200F229822FED0066399A /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				ACA200F329822FED0066399A /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		ACA200FC29822FED0066399A /* ApduToolTests */ = {
+			isa = PBXGroup;
+			children = (
+				ACA200FD29822FED0066399A /* ApduToolTests.swift */,
+			);
+			path = ApduToolTests;
+			sourceTree = "<group>";
+		};
+		ACA2010629822FED0066399A /* ApduToolUITests */ = {
+			isa = PBXGroup;
+			children = (
+				ACA2010729822FED0066399A /* ApduToolUITests.swift */,
+				ACA2010929822FED0066399A /* ApduToolUITestsLaunchTests.swift */,
+			);
+			path = ApduToolUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ACA200E729822FEC0066399A /* ApduTool */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACA2010D29822FED0066399A /* Build configuration list for PBXNativeTarget "ApduTool" */;
+			buildPhases = (
+				ACA200E429822FEC0066399A /* Sources */,
+				ACA200E529822FEC0066399A /* Frameworks */,
+				ACA200E629822FEC0066399A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ApduTool;
+			productName = ApduTool;
+			productReference = ACA200E829822FEC0066399A /* ApduTool.app */;
+			productType = "com.apple.product-type.application";
+		};
+		ACA200F829822FED0066399A /* ApduToolTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACA2011029822FED0066399A /* Build configuration list for PBXNativeTarget "ApduToolTests" */;
+			buildPhases = (
+				ACA200F529822FED0066399A /* Sources */,
+				ACA200F629822FED0066399A /* Frameworks */,
+				ACA200F729822FED0066399A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ACA200FB29822FED0066399A /* PBXTargetDependency */,
+			);
+			name = ApduToolTests;
+			productName = ApduToolTests;
+			productReference = ACA200F929822FED0066399A /* ApduToolTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		ACA2010229822FED0066399A /* ApduToolUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACA2011329822FED0066399A /* Build configuration list for PBXNativeTarget "ApduToolUITests" */;
+			buildPhases = (
+				ACA200FF29822FED0066399A /* Sources */,
+				ACA2010029822FED0066399A /* Frameworks */,
+				ACA2010129822FED0066399A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ACA2010529822FED0066399A /* PBXTargetDependency */,
+			);
+			name = ApduToolUITests;
+			productName = ApduToolUITests;
+			productReference = ACA2010329822FED0066399A /* ApduToolUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ACA200E029822FEC0066399A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1420;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					ACA200E729822FEC0066399A = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					ACA200F829822FED0066399A = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = ACA200E729822FEC0066399A;
+					};
+					ACA2010229822FED0066399A = {
+						CreatedOnToolsVersion = 14.2;
+						TestTargetID = ACA200E729822FEC0066399A;
+					};
+				};
+			};
+			buildConfigurationList = ACA200E329822FEC0066399A /* Build configuration list for PBXProject "ApduTool" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = ACA200DF29822FEC0066399A;
+			productRefGroup = ACA200E929822FEC0066399A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ACA200E729822FEC0066399A /* ApduTool */,
+				ACA200F829822FED0066399A /* ApduToolTests */,
+				ACA2010229822FED0066399A /* ApduToolUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		ACA200E629822FEC0066399A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACA200F429822FED0066399A /* Preview Assets.xcassets in Resources */,
+				ACA200F029822FED0066399A /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACA200F729822FED0066399A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACA2010129822FED0066399A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		ACA200E429822FEC0066399A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACA200EE29822FEC0066399A /* ContentView.swift in Sources */,
+				ACA200EC29822FEC0066399A /* ApduToolApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACA200F529822FED0066399A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACA200FE29822FED0066399A /* ApduToolTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACA200FF29822FED0066399A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACA2010A29822FED0066399A /* ApduToolUITestsLaunchTests.swift in Sources */,
+				ACA2010829822FED0066399A /* ApduToolUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ACA200FB29822FED0066399A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ACA200E729822FEC0066399A /* ApduTool */;
+			targetProxy = ACA200FA29822FED0066399A /* PBXContainerItemProxy */;
+		};
+		ACA2010529822FED0066399A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ACA200E729822FEC0066399A /* ApduTool */;
+			targetProxy = ACA2010429822FED0066399A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		ACA2010B29822FED0066399A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		ACA2010C29822FED0066399A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		ACA2010E29822FED0066399A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ApduTool/ApduTool.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ApduTool/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduTool;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		ACA2010F29822FED0066399A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ApduTool/ApduTool.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ApduTool/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduTool;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		ACA2011129822FED0066399A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduToolTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ApduTool.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ApduTool";
+			};
+			name = Debug;
+		};
+		ACA2011229822FED0066399A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduToolTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ApduTool.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ApduTool";
+			};
+			name = Release;
+		};
+		ACA2011429822FED0066399A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduToolUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ApduTool;
+			};
+			name = Debug;
+		};
+		ACA2011529822FED0066399A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				MACOSX_DEPLOYMENT_TARGET = 13.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduToolUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ApduTool;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ACA200E329822FEC0066399A /* Build configuration list for PBXProject "ApduTool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACA2010B29822FED0066399A /* Debug */,
+				ACA2010C29822FED0066399A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACA2010D29822FED0066399A /* Build configuration list for PBXNativeTarget "ApduTool" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACA2010E29822FED0066399A /* Debug */,
+				ACA2010F29822FED0066399A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACA2011029822FED0066399A /* Build configuration list for PBXNativeTarget "ApduToolTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACA2011129822FED0066399A /* Debug */,
+				ACA2011229822FED0066399A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACA2011329822FED0066399A /* Build configuration list for PBXNativeTarget "ApduToolUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACA2011429822FED0066399A /* Debug */,
+				ACA2011529822FED0066399A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ACA200E029822FEC0066399A /* Project object */;
+}
