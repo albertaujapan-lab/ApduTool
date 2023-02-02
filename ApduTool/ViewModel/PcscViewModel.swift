@@ -17,6 +17,7 @@ class PcscViewModel: ObservableObject {
         case muteCard = "Muted"
         case probing = "Probing"
     }
+    @Published var selectedReader: String = ""
     @Published var slotNames:[String] = [String]()
     @Published var connected: Bool = false
     @Published var sendData: String = ""
@@ -35,19 +36,22 @@ class PcscViewModel: ObservableObject {
     }
     
     func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned self] in
             self.slotNames = self.pcsc.getSlotNames()
+            if self.connected && !self.slotNames.contains(self.selectedReader) {
+                self.disconnect()
+            }
         }
     }
     
     func getConnectResponse(res: Bool) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned self] in
             self.connected = res
         }
     }
     
     func getTransmitResponse(data: Data?, error: Error?) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned self] in
             guard let recvData = data?.bytes else {
                 self.apdu.recvData = []
                 if (error != nil) {
@@ -61,7 +65,7 @@ class PcscViewModel: ObservableObject {
     }
     
     func getCardState(state: TKSmartCardSlot.State?) {
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [unowned self] in
             if (state != nil) {
                 switch(state!) {
                 case .missing:
@@ -90,9 +94,9 @@ class PcscViewModel: ObservableObject {
         pcsc.transferApdu(data: Data(apdu.sendData))
     }
     
-    func connect(readerName: String) {
+    func connect() {
         status = ""
-        pcsc.monitorSlot(readerName: readerName)
+        pcsc.monitorSlot(readerName: selectedReader)
     }
     
     func disconnect() {

@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct ReadersView: View {
-    @State var selectedReader: String = ""
     @EnvironmentObject var pcsc: PcscViewModel
     var screenWidth: CGFloat
     var body: some View {
         HStack {
-            Picker(selection: $selectedReader, label: Text("Select a reader")) {
+            Picker(selection: $pcsc.selectedReader, label: Text("Select a reader")) {
                 ForEach(self.pcsc.slotNames, id: \.self) {
                     Text($0)
                 }
@@ -22,8 +21,8 @@ struct ReadersView: View {
             .frame(width: screenWidth * 0.6)
             .disabled(pcsc.connected)
             .onReceive(pcsc.slotNames.publisher, perform: { value in
-                if (selectedReader == "" || !pcsc.slotNames.contains(selectedReader)) {
-                    selectedReader = value
+                if (!pcsc.slotNames.contains(pcsc.selectedReader)) {
+                    pcsc.selectedReader = value
                 }
             })
             Text(pcsc.connected ? "Connected": "Not connected")
@@ -32,7 +31,7 @@ struct ReadersView: View {
                 if (pcsc.connected) {
                     pcsc.disconnect()
                 } else {
-                    pcsc.connect(readerName: selectedReader)
+                    pcsc.connect()
                 }
             } label: {
                 if (pcsc.connected) {
