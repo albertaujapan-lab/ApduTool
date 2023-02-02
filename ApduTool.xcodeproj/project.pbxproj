@@ -14,6 +14,13 @@
 		ACA200FE29822FED0066399A /* ApduToolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA200FD29822FED0066399A /* ApduToolTests.swift */; };
 		ACA2010829822FED0066399A /* ApduToolUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2010729822FED0066399A /* ApduToolUITests.swift */; };
 		ACA2010A29822FED0066399A /* ApduToolUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2010929822FED0066399A /* ApduToolUITestsLaunchTests.swift */; };
+		ACA20118298231370066399A /* Pcsc.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA20117298231370066399A /* Pcsc.swift */; };
+		ACA2011B298256860066399A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2011A298256860066399A /* Utils.swift */; };
+		ACA2011E29826DD20066399A /* Apdu.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2011D29826DD20066399A /* Apdu.swift */; };
+		ACB51C482987750800AC0AFB /* StateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACB51C472987750800AC0AFB /* StateView.swift */; };
+		ACFD702A2983810700002153 /* ReadersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFD70292983810700002153 /* ReadersView.swift */; };
+		ACFD702C2983823E00002153 /* TransferApduView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFD702B2983823E00002153 /* TransferApduView.swift */; };
+		ACFD702E2987540F00002153 /* PcscViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFD702D2987540F00002153 /* PcscViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +52,13 @@
 		ACA2010329822FED0066399A /* ApduToolUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ApduToolUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACA2010729822FED0066399A /* ApduToolUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApduToolUITests.swift; sourceTree = "<group>"; };
 		ACA2010929822FED0066399A /* ApduToolUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApduToolUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		ACA20117298231370066399A /* Pcsc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pcsc.swift; sourceTree = "<group>"; };
+		ACA2011A298256860066399A /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		ACA2011D29826DD20066399A /* Apdu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apdu.swift; sourceTree = "<group>"; };
+		ACB51C472987750800AC0AFB /* StateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateView.swift; sourceTree = "<group>"; };
+		ACFD70292983810700002153 /* ReadersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadersView.swift; sourceTree = "<group>"; };
+		ACFD702B2983823E00002153 /* TransferApduView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferApduView.swift; sourceTree = "<group>"; };
+		ACFD702D2987540F00002153 /* PcscViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PcscViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,8 +109,11 @@
 		ACA200EA29822FEC0066399A /* ApduTool */ = {
 			isa = PBXGroup;
 			children = (
+				ACA2011C29826D6F0066399A /* Model */,
+				ACFD7028298380D000002153 /* View */,
+				ACA20116298230C90066399A /* ViewModel */,
+				ACA20119298256650066399A /* Components */,
 				ACA200EB29822FEC0066399A /* ApduToolApp.swift */,
-				ACA200ED29822FEC0066399A /* ContentView.swift */,
 				ACA200EF29822FED0066399A /* Assets.xcassets */,
 				ACA200F129822FED0066399A /* ApduTool.entitlements */,
 				ACA200F229822FED0066399A /* Preview Content */,
@@ -127,6 +144,42 @@
 				ACA2010929822FED0066399A /* ApduToolUITestsLaunchTests.swift */,
 			);
 			path = ApduToolUITests;
+			sourceTree = "<group>";
+		};
+		ACA20116298230C90066399A /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				ACFD702D2987540F00002153 /* PcscViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		ACA20119298256650066399A /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				ACA20117298231370066399A /* Pcsc.swift */,
+				ACA2011A298256860066399A /* Utils.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		ACA2011C29826D6F0066399A /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				ACA2011D29826DD20066399A /* Apdu.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		ACFD7028298380D000002153 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				ACA200ED29822FEC0066399A /* ContentView.swift */,
+				ACFD70292983810700002153 /* ReadersView.swift */,
+				ACFD702B2983823E00002153 /* TransferApduView.swift */,
+				ACB51C472987750800AC0AFB /* StateView.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -260,7 +313,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				ACA200EE29822FEC0066399A /* ContentView.swift in Sources */,
+				ACA20118298231370066399A /* Pcsc.swift in Sources */,
 				ACA200EC29822FEC0066399A /* ApduToolApp.swift in Sources */,
+				ACFD702E2987540F00002153 /* PcscViewModel.swift in Sources */,
+				ACA2011E29826DD20066399A /* Apdu.swift in Sources */,
+				ACA2011B298256860066399A /* Utils.swift in Sources */,
+				ACB51C482987750800AC0AFB /* StateView.swift in Sources */,
+				ACFD702C2983823E00002153 /* TransferApduView.swift in Sources */,
+				ACFD702A2983810700002153 /* ReadersView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -415,6 +475,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ApduTool/Preview Content\"";
+				DEVELOPMENT_TEAM = 4C5LG9ZP6A;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -451,6 +512,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ApduTool/Preview Content\"";
+				DEVELOPMENT_TEAM = 4C5LG9ZP6A;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

@@ -11,7 +11,7 @@ import SwiftUI
 struct ApduToolApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().environmentObject(PcscViewModel())
         }
     }
 }
