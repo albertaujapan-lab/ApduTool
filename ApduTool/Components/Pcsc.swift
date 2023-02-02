@@ -8,7 +8,7 @@
 import Foundation
 import CryptoTokenKit
 
-class Pcsc : NSObject, ObservableObject
+class Pcsc : NSObject
 {
     @objc private var mngr = TKSmartCardSlotManager.default
     private var managerObservation: NSKeyValueObservation?

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var pcsc: Pcsc
     var body: some View {
         GeometryReader { screen in
             let screenWidth = screen.size.width
