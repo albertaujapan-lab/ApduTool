@@ -52,14 +52,10 @@ class PcscViewModel: ObservableObject {
     
     func getTransmitResponse(data: Data?, error: Error?) {
         DispatchQueue.main.async { [unowned self] in
-            guard let recvData = data?.bytes else {
-                self.apdu.recvData = []
-                if (error != nil) {
-                    self.status = error.debugDescription
-                }
-                return
+            self.apdu.recvData = data?.bytes ?? []
+            if (error != nil) {
+                self.status = error.debugDescription
             }
-            self.apdu.recvData = recvData
             self.recvData = self.apdu.recvData.hexString
         }
     }
