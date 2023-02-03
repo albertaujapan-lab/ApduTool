@@ -18,7 +18,7 @@ class PcscViewModel: ObservableObject {
         case probing = "Probing"
     }
     @Published var selectedReader: String = ""
-    @Published var slotNames:[String] = [String]()
+    @Published var slotNames:[String] = []
     @Published var connected: Bool = false
     @Published var sendData: String = ""
     @Published var recvData: String = ""
