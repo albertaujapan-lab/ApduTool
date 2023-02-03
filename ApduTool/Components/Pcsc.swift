@@ -18,7 +18,7 @@ class Pcsc : NSObject
     var updateCardSlots: ((TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void)?
     var getConnectResponse: ((Bool) -> Void)?
     var getTransmitResponse: ((Data?, Error?) -> Void)?
-    var getCardInfo: ((TKSmartCardSlot.State?) -> Void)?
+    var getCardInfo: ((TKSmartCardSlot.State?, Error?) -> Void)?
     
     override init() {
         super.init()
@@ -33,7 +33,7 @@ class Pcsc : NSObject
         getConnectResponse = function
     }
     
-    func setGetCardInfo(_ function: @escaping((TKSmartCardSlot.State?) -> Void)) {
+    func setGetCardInfo(_ function: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
         getCardInfo = function
     }
     
@@ -69,22 +69,24 @@ class Pcsc : NSObject
                         self.slotObservation = nil
                         self.activeCard?.endSession()
                         self.activeCard = nil
-                        self.getCardInfo?(state)
                     case .empty:
                         self.activeCard?.endSession()
                         self.activeCard = nil
-                        self.getCardInfo?(state)
                     case .validCard:
                         self.activeCard = self.currentSlot?.makeSmartCard()
                         self.activeCard?.beginSession(reply: { res, error in
-                            self.getCardInfo?(state)
+                            if (error != nil) {
+                                self.activeCard = nil
+                            }
+                            self.getCardInfo?(state, error)
                         })
+                        return
                     default:
-                        self.getCardInfo?(state)
                         break
                     }
+                    self.getCardInfo?(state, nil)
                 } else {
-                    self.getCardInfo?(nil)
+                    self.getCardInfo?(nil, nil)
                 }
             }
             self.getConnectResponse?(self.slotObservation != nil)

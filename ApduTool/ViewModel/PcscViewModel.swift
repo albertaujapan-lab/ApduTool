@@ -79,7 +79,7 @@ class PcscViewModel: ObservableObject {
         }
     }
     
-    func getCardInfo(state: TKSmartCardSlot.State?) {
+    func getCardInfo(state: TKSmartCardSlot.State?, error: Error?) {
         DispatchQueue.main.async { [unowned self] in
             if (state != nil) {
                 switch(state!) {
@@ -100,6 +100,9 @@ class PcscViewModel: ObservableObject {
                 }
             } else {
                 cardInfo = CardInfo()
+            }
+            if (error != nil) {
+                status = error.debugDescription
             }
         }
     }
