@@ -30,11 +30,9 @@ extension StringProtocol {
 extension [UInt8] {
     var hexString: String {
         var hexString: String = ""
-        var count = self.count
         for byte in self
         {
             hexString.append(String(format:"%02X", byte))
-            count = count - 1
         }
         return hexString
     }
