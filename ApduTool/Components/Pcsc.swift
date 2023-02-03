@@ -18,7 +18,7 @@ class Pcsc : NSObject
     var updateCardSlots: ((TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void)?
     var getConnectResponse: ((Bool) -> Void)?
     var getTransmitResponse: ((Data?, Error?) -> Void)?
-    var getCardState: ((TKSmartCardSlot.State?) -> Void)?
+    var getCardInfo: ((TKSmartCardSlot.State?) -> Void)?
     
     override init() {
         super.init()
@@ -33,8 +33,8 @@ class Pcsc : NSObject
         getConnectResponse = function
     }
     
-    func setGetCardState(_ function: @escaping((TKSmartCardSlot.State?) -> Void)) {
-        getCardState = function
+    func setGetCardInfo(_ function: @escaping((TKSmartCardSlot.State?) -> Void)) {
+        getCardInfo = function
     }
     
     func setGetTransmitResponse(_ function: @escaping ((Data?, Error?) -> Void)) {
@@ -47,6 +47,14 @@ class Pcsc : NSObject
         }) ?? []
     }
     
+    func getAtr() -> String {
+        return currentSlot?.atr?.bytes.bytes.hexString ?? ""
+    }
+    
+    func getCurrentProtocol() -> TKSmartCardProtocol {
+        return activeCard?.currentProtocol ?? TKSmartCardProtocol.any
+    }
+    
     private func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
         updateCardSlots?(manager, change)
     }
@@ -56,22 +64,27 @@ class Pcsc : NSObject
             self.currentSlot = slot
             self.slotObservation = self.currentSlot?.observe(\.state, options: .initial) { _, _ in
                 if let state = self.currentSlot?.state {
-                    self.getCardState?(state)
                     switch state {
                     case .missing:
                         self.slotObservation = nil
+                        self.activeCard?.endSession()
+                        self.activeCard = nil
+                        self.getCardInfo?(state)
                     case .empty:
                         self.activeCard?.endSession()
                         self.activeCard = nil
+                        self.getCardInfo?(state)
                     case .validCard:
                         self.activeCard = self.currentSlot?.makeSmartCard()
                         self.activeCard?.beginSession(reply: { res, error in
+                            self.getCardInfo?(state)
                         })
                     default:
+                        self.getCardInfo?(state)
                         break
                     }
                 } else {
-                    self.getCardState!(nil)
+                    self.getCardInfo?(nil)
                 }
             }
             self.getConnectResponse?(self.slotObservation != nil)

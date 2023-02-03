@@ -17,13 +17,19 @@ class PcscViewModel: ObservableObject {
         case muteCard = "Muted"
         case probing = "Probing"
     }
+    
+    struct CardInfo {
+        var atr: String = ""
+        var currentProtocol: String = ""
+        var cardState: CardState = CardState.unknown
+    }
     @Published var selectedReader: String = ""
     @Published var slotNames:[String] = []
     @Published var connected: Bool = false
     @Published var sendData: String = ""
     @Published var recvData: String = ""
     @Published var status: String = ""
-    @Published var cardState: CardState = CardState.unknown
+    @Published var cardInfo: CardInfo = CardInfo()
     var apdu: Apdu = Apdu()
     var pcsc: Pcsc = Pcsc()
     
@@ -32,53 +38,68 @@ class PcscViewModel: ObservableObject {
         pcsc.setUpdateCardSlots(self.updateCardSlots)
         pcsc.setGetConnectResponse(self.getConnectResponse)
         pcsc.setGetTransmitResponse(self.getTransmitResponse)
-        pcsc.setGetCardState(self.getCardState)
+        pcsc.setGetCardInfo(self.getCardInfo)
     }
     
     func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
         DispatchQueue.main.async { [unowned self] in
-            self.slotNames = self.pcsc.getSlotNames()
-            if self.connected && !self.slotNames.contains(self.selectedReader) {
-                self.disconnect()
+            slotNames = pcsc.getSlotNames()
+            if connected && !slotNames.contains(selectedReader) {
+                disconnect()
             }
         }
     }
     
     func getConnectResponse(res: Bool) {
         DispatchQueue.main.async { [unowned self] in
-            self.connected = res
+            connected = res
         }
     }
     
     func getTransmitResponse(data: Data?, error: Error?) {
         DispatchQueue.main.async { [unowned self] in
-            self.apdu.recvData = data?.bytes ?? []
+            apdu.recvData = data?.bytes ?? []
             if (error != nil) {
-                self.status = error.debugDescription
+                status = error.debugDescription
             }
-            self.recvData = self.apdu.recvData.hexString
+            recvData = apdu.recvData.hexString
         }
     }
     
-    func getCardState(state: TKSmartCardSlot.State?) {
+    private func getProtocolString(_ cardProtocol: TKSmartCardProtocol) -> String {
+        switch(cardProtocol) {
+        case TKSmartCardProtocol.t0:
+            return "T0"
+        case TKSmartCardProtocol.t1:
+            return "T1"
+        case TKSmartCardProtocol.t15:
+            return "T15"
+        default:
+            return "Any"
+        }
+    }
+    
+    func getCardInfo(state: TKSmartCardSlot.State?) {
         DispatchQueue.main.async { [unowned self] in
             if (state != nil) {
                 switch(state!) {
                 case .missing:
-                    self.cardState = CardState.unknown
+                    cardInfo = CardInfo()
                 case .empty:
-                    self.cardState = CardState.empty
+                    cardInfo = CardInfo(cardState: CardState.empty)
                 case .validCard:
-                    self.cardState = CardState.validCard
+                    cardInfo.cardState = CardState.validCard
+                    cardInfo.atr = pcsc.getAtr()
+                    cardInfo.currentProtocol = getProtocolString(pcsc.getCurrentProtocol())
                 case .muteCard:
-                    self.cardState = CardState.muteCard
+                    cardInfo = CardInfo(cardState: CardState.muteCard)
                 case .probing:
-                    self.cardState = CardState.probing
+                    cardInfo = CardInfo(cardState: CardState.probing)
                 default:
-                    self.cardState = CardState.unknown
+                    cardInfo = CardInfo()
                 }
             } else {
-                self.cardState = CardState.unknown
+                cardInfo = CardInfo()
             }
         }
     }
@@ -98,6 +119,6 @@ class PcscViewModel: ObservableObject {
     func disconnect() {
         pcsc.disconnect()
         connected = false
-        cardState = CardState.unknown
+        cardInfo = CardInfo()
     }
 }
