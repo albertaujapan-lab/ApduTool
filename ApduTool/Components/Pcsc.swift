@@ -42,12 +42,9 @@ class Pcsc : NSObject
     }
     
     func getSlotNames() -> [String] {
-        guard let slotNames = mngr?.slotNames.filter({ name in
+        return mngr?.slotNames.filter({ name in
             return name.starts(with: "ACS")
-        }) else {
-            return [String]()
-        }
-        return slotNames
+        }) ?? [String]()
     }
     
     private func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
