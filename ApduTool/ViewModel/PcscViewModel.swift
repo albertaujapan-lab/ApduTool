@@ -37,7 +37,6 @@ class PcscViewModel: ObservableObject {
         slotNames = pcsc.getSlotNames()
         pcsc.setUpdateCardSlots(self.updateCardSlots)
         pcsc.setGetConnectResponse(self.getConnectResponse)
-        pcsc.setGetTransmitResponse(self.getTransmitResponse)
         pcsc.setGetCardInfo(self.getCardInfo)
     }
     
@@ -56,7 +55,7 @@ class PcscViewModel: ObservableObject {
         }
     }
     
-    func getTransmitResponse(data: Data?, error: Error?) {
+    func getResponse(data: Data?, error: Error?) {
         DispatchQueue.main.async { [unowned self] in
             apdu.recvData = data?.bytes ?? []
             if (error != nil) {
@@ -111,7 +110,14 @@ class PcscViewModel: ObservableObject {
         apdu.sendData = sendData.hexBytes
         recvData = ""
         status = ""
-        pcsc.transferApdu(data: Data(apdu.sendData))
+        pcsc.transferApdu(data: Data(apdu.sendData), getResponse: getResponse)
+    }
+    
+    func transferEscapeCommand() {
+        apdu.sendData = sendData.hexBytes
+        recvData = ""
+        status = ""
+        pcsc.transferEscapeCommand(readerName: selectedReader, data: Data(apdu.sendData), getResponse: getResponse)
     }
     
     func connect() {

@@ -15,9 +15,9 @@ class Pcsc : NSObject
     private var slotObservation: NSKeyValueObservation?
     private var activeCard: TKSmartCard? = nil
     private var currentSlot: TKSmartCardSlot? = nil
+    private var escapeCommand: EscapeCommand = EscapeCommand()
     var updateCardSlots: ((TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void)?
     var getConnectResponse: ((Bool) -> Void)?
-    var getTransmitResponse: ((Data?, Error?) -> Void)?
     var getCardInfo: ((TKSmartCardSlot.State?, Error?) -> Void)?
     
     override init() {
@@ -35,10 +35,6 @@ class Pcsc : NSObject
     
     func setGetCardInfo(_ function: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
         getCardInfo = function
-    }
-    
-    func setGetTransmitResponse(_ function: @escaping ((Data?, Error?) -> Void)) {
-        getTransmitResponse = function
     }
     
     func getSlotNames() -> [String] {
@@ -103,11 +99,23 @@ class Pcsc : NSObject
         }
     }
     
-    public func transferApdu(data: Data) {
+    public func transferApdu(data: Data, getResponse: ((Data?, Error?) -> Void)?) {
         if (activeCard != nil) {
             activeCard?.transmit(Data(data), reply: { data, error in
-                self.getTransmitResponse?(data, error)
+                getResponse?(data, error)
             })
+        }
+    }
+    
+    public func transferEscapeCommand(readerName: String, data: Data, getResponse: ((Data?, Error?) -> Void)?) {
+        let szReader = (UnsafePointer<CChar>)(strdup(readerName)!)
+        let sendData = (UnsafeMutablePointer<UInt8>)(mutating: NSData(bytes: data.bytes, length: data.count).bytes.assumingMemoryBound(to: UInt8.self))
+        let recvData = UnsafeMutablePointer<UInt8>.allocate(capacity: 256)
+        let pRecvLength = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+        escapeCommand.transfer(szReader, andSendData: sendData, andSendLength: (UInt32)(data.count), andRecvData: recvData, andPRecvLength: pRecvLength)
+        if (getResponse != nil) {
+            let data = Data(buffer: UnsafeMutableBufferPointer(start: recvData, count: (Int)(pRecvLength.pointee)))
+            getResponse?(data, nil)
         }
     }
 }

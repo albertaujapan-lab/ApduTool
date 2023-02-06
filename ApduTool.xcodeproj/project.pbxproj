@@ -18,6 +18,7 @@
 		ACA2011B298256860066399A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2011A298256860066399A /* Utils.swift */; };
 		ACA2011E29826DD20066399A /* Apdu.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2011D29826DD20066399A /* Apdu.swift */; };
 		ACB51C482987750800AC0AFB /* StateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACB51C472987750800AC0AFB /* StateView.swift */; };
+		ACD1AE3929909067003EA150 /* EscapeCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = ACD1AE3829909067003EA150 /* EscapeCommand.m */; };
 		ACFD702A2983810700002153 /* ReadersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFD70292983810700002153 /* ReadersView.swift */; };
 		ACFD702C2983823E00002153 /* TransferApduView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFD702B2983823E00002153 /* TransferApduView.swift */; };
 		ACFD702E2987540F00002153 /* PcscViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFD702D2987540F00002153 /* PcscViewModel.swift */; };
@@ -56,6 +57,9 @@
 		ACA2011A298256860066399A /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		ACA2011D29826DD20066399A /* Apdu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apdu.swift; sourceTree = "<group>"; };
 		ACB51C472987750800AC0AFB /* StateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateView.swift; sourceTree = "<group>"; };
+		ACD1AE3629909066003EA150 /* ApduTool-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApduTool-Bridging-Header.h"; sourceTree = "<group>"; };
+		ACD1AE3729909067003EA150 /* EscapeCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EscapeCommand.h; sourceTree = "<group>"; };
+		ACD1AE3829909067003EA150 /* EscapeCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EscapeCommand.m; sourceTree = "<group>"; };
 		ACFD70292983810700002153 /* ReadersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadersView.swift; sourceTree = "<group>"; };
 		ACFD702B2983823E00002153 /* TransferApduView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferApduView.swift; sourceTree = "<group>"; };
 		ACFD702D2987540F00002153 /* PcscViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PcscViewModel.swift; sourceTree = "<group>"; };
@@ -109,10 +113,10 @@
 		ACA200EA29822FEC0066399A /* ApduTool */ = {
 			isa = PBXGroup;
 			children = (
+				ACA20119298256650066399A /* Components */,
 				ACA2011C29826D6F0066399A /* Model */,
 				ACFD7028298380D000002153 /* View */,
 				ACA20116298230C90066399A /* ViewModel */,
-				ACA20119298256650066399A /* Components */,
 				ACA200EB29822FEC0066399A /* ApduToolApp.swift */,
 				ACA200EF29822FED0066399A /* Assets.xcassets */,
 				ACA200F129822FED0066399A /* ApduTool.entitlements */,
@@ -157,8 +161,11 @@
 		ACA20119298256650066399A /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				ACD1AE3629909066003EA150 /* ApduTool-Bridging-Header.h */,
 				ACA20117298231370066399A /* Pcsc.swift */,
 				ACA2011A298256860066399A /* Utils.swift */,
+				ACD1AE3729909067003EA150 /* EscapeCommand.h */,
+				ACD1AE3829909067003EA150 /* EscapeCommand.m */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -250,6 +257,7 @@
 				TargetAttributes = {
 					ACA200E729822FEC0066399A = {
 						CreatedOnToolsVersion = 14.2;
+						LastSwiftMigration = 1420;
 					};
 					ACA200F829822FED0066399A = {
 						CreatedOnToolsVersion = 14.2;
@@ -316,6 +324,7 @@
 				ACA20118298231370066399A /* Pcsc.swift in Sources */,
 				ACA200EC29822FEC0066399A /* ApduToolApp.swift in Sources */,
 				ACFD702E2987540F00002153 /* PcscViewModel.swift in Sources */,
+				ACD1AE3929909067003EA150 /* EscapeCommand.m in Sources */,
 				ACA2011E29826DD20066399A /* Apdu.swift in Sources */,
 				ACA2011B298256860066399A /* Utils.swift in Sources */,
 				ACB51C482987750800AC0AFB /* StateView.swift in Sources */,
@@ -471,6 +480,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ApduTool/ApduTool.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -498,6 +508,8 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "ApduTool/Components/ApduTool-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -508,6 +520,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ApduTool/ApduTool.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -535,6 +548,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "ApduTool/Components/ApduTool-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

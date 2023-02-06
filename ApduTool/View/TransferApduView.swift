@@ -23,7 +23,9 @@ struct TransferApduView: View {
                         pcsc.sendData = newValue.uppercased().filter("0123456789ABCDEF".contains)
                     })
                 Button() {
-                    if (pcsc.connected) {
+                    if (pcsc.sendData.starts(with: "E0")) {
+                        pcsc.transferEscapeCommand()
+                    } else if (pcsc.connected) {
                         pcsc.transferApdu()
                     }
                 } label: {
