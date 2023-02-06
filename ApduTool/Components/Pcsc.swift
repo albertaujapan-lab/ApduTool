@@ -112,10 +112,14 @@ class Pcsc : NSObject
         let sendData = (UnsafeMutablePointer<UInt8>)(mutating: NSData(bytes: data.bytes, length: data.count).bytes.assumingMemoryBound(to: UInt8.self))
         let recvData = UnsafeMutablePointer<UInt8>.allocate(capacity: 256)
         let pRecvLength = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
-        escapeCommand.transfer(szReader, andSendData: sendData, andSendLength: (UInt32)(data.count), andRecvData: recvData, andPRecvLength: pRecvLength)
+        let result = escapeCommand.transfer(szReader, andSendData: sendData, andSendLength: (UInt32)(data.count), andRecvData: recvData, andPRecvLength: pRecvLength)
         if (getResponse != nil) {
+            var error: Error? = nil
             let data = Data(buffer: UnsafeMutableBufferPointer(start: recvData, count: (Int)(pRecvLength.pointee)))
-            getResponse?(data, nil)
+            if (result != 0) {
+                error = NSError(domain: "", code: Int(result), userInfo: [NSLocalizedDescriptionKey : "Escape command transfer failure"])
+            }
+            getResponse?(data, error)
         }
     }
 }
