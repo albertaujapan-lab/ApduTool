@@ -52,7 +52,7 @@ class Pcsc : NSObject
             if let state = self.currentSlot?.state {
                 switch state {
                 case .missing:
-                    self.disconnect()
+                    self.stopSlotMonitor()
                     self.getConnectResponse?(self.slotObservation != nil)
                 case .empty:
                     self.activeCard?.endSession()
@@ -76,7 +76,7 @@ class Pcsc : NSObject
         }
     }
     
-    public func monitorSlot(readerName: String, getConnectResponse: @escaping((Bool) -> Void), getCardInfo: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
+    public func startSlotMonitor(readerName: String, getConnectResponse: @escaping((Bool) -> Void), getCardInfo: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
         self.getConnectResponse = getConnectResponse
         self.getCardInfo = getCardInfo
         _ = mngr?.getSlot(withName: readerName) { slot in
@@ -86,7 +86,7 @@ class Pcsc : NSObject
         }
     }
     
-    public func disconnect() {
+    public func stopSlotMonitor() {
         if (activeCard != nil) {
             activeCard?.endSession()
             activeCard = nil

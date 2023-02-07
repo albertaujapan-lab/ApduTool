@@ -117,11 +117,11 @@ class PcscViewModel: ObservableObject {
     
     func connect() {
         status = ""
-        pcsc.monitorSlot(readerName: selectedReader, getConnectResponse: getConnectResponse, getCardInfo: getCardInfo)
+        pcsc.startSlotMonitor(readerName: selectedReader, getConnectResponse: getConnectResponse, getCardInfo: getCardInfo)
     }
     
     func disconnect() {
-        pcsc.disconnect()
+        pcsc.stopSlotMonitor()
         connected = false
         cardInfo = CardInfo()
     }
