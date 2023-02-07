@@ -29,14 +29,6 @@ class Pcsc : NSObject
         updateCardSlots = function
     }
     
-    func setGetConnectResponse(_ function: @escaping ((Bool) -> Void)) {
-        getConnectResponse = function
-    }
-    
-    func setGetCardInfo(_ function: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
-        getCardInfo = function
-    }
-    
     func getSlotNames() -> [String] {
         return mngr?.slotNames.filter({ name in
             return name.starts(with: "ACS")
@@ -55,36 +47,42 @@ class Pcsc : NSObject
         updateCardSlots?(manager, change)
     }
     
-    public func monitorSlot(readerName: String) {
+    private func monitorCard() -> NSKeyValueObservation? {
+        return self.currentSlot?.observe(\.state, options: .initial) { _, _ in
+            if let state = self.currentSlot?.state {
+                switch state {
+                case .missing:
+                    self.slotObservation = nil
+                    self.activeCard?.endSession()
+                    self.activeCard = nil
+                case .empty:
+                    self.activeCard?.endSession()
+                    self.activeCard = nil
+                case .validCard:
+                    self.activeCard = self.currentSlot?.makeSmartCard()
+                    self.activeCard?.beginSession(reply: { res, error in
+                        if (error != nil) {
+                            self.activeCard = nil
+                        }
+                        self.getCardInfo?(state, error)
+                    })
+                    return
+                default:
+                    break
+                }
+                self.getCardInfo?(state, nil)
+            } else {
+                self.getCardInfo?(nil, nil)
+            }
+        }
+    }
+    
+    public func monitorSlot(readerName: String, getConnectResponse: @escaping((Bool) -> Void), getCardInfo: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
+        self.getConnectResponse = getConnectResponse
+        self.getCardInfo = getCardInfo
         _ = mngr?.getSlot(withName: readerName) { slot in
             self.currentSlot = slot
-            self.slotObservation = self.currentSlot?.observe(\.state, options: .initial) { _, _ in
-                if let state = self.currentSlot?.state {
-                    switch state {
-                    case .missing:
-                        self.slotObservation = nil
-                        self.activeCard?.endSession()
-                        self.activeCard = nil
-                    case .empty:
-                        self.activeCard?.endSession()
-                        self.activeCard = nil
-                    case .validCard:
-                        self.activeCard = self.currentSlot?.makeSmartCard()
-                        self.activeCard?.beginSession(reply: { res, error in
-                            if (error != nil) {
-                                self.activeCard = nil
-                            }
-                            self.getCardInfo?(state, error)
-                        })
-                        return
-                    default:
-                        break
-                    }
-                    self.getCardInfo?(state, nil)
-                } else {
-                    self.getCardInfo?(nil, nil)
-                }
-            }
+            self.slotObservation = self.monitorCard()
             self.getConnectResponse?(self.slotObservation != nil)
         }
     }

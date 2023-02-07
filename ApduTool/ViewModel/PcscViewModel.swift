@@ -36,8 +36,6 @@ class PcscViewModel: ObservableObject {
     init() {
         slotNames = pcsc.getSlotNames()
         pcsc.setUpdateCardSlots(self.updateCardSlots)
-        pcsc.setGetConnectResponse(self.getConnectResponse)
-        pcsc.setGetCardInfo(self.getCardInfo)
     }
     
     func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
@@ -122,7 +120,7 @@ class PcscViewModel: ObservableObject {
     
     func connect() {
         status = ""
-        pcsc.monitorSlot(readerName: selectedReader)
+        pcsc.monitorSlot(readerName: selectedReader, getConnectResponse: getConnectResponse, getCardInfo: getCardInfo)
     }
     
     func disconnect() {
