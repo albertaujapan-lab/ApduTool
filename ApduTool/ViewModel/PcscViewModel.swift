@@ -41,9 +41,6 @@ class PcscViewModel: ObservableObject {
     func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
         DispatchQueue.main.async { [unowned self] in
             slotNames = pcsc.getSlotNames()
-            if connected && !slotNames.contains(selectedReader) {
-                disconnect()
-            }
         }
     }
     

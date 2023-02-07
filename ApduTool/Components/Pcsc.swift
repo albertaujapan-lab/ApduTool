@@ -52,9 +52,8 @@ class Pcsc : NSObject
             if let state = self.currentSlot?.state {
                 switch state {
                 case .missing:
-                    self.slotObservation = nil
-                    self.activeCard?.endSession()
-                    self.activeCard = nil
+                    self.disconnect()
+                    self.getConnectResponse?(self.slotObservation != nil)
                 case .empty:
                     self.activeCard?.endSession()
                     self.activeCard = nil
