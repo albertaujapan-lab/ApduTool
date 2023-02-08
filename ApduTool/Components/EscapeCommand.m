@@ -15,7 +15,7 @@
 #define SCARD_E_UNSUPPORTED_FEATURE    0x80100022
 #endif
 @implementation EscapeCommand
-- (uint32_t) transfer: (const char*)szReader andSendData: (uint8_t *)sendData andSendLength:(uint32_t)sendLength andRecvData:(uint8_t *)recvData andPRecvLength:(uint32_t*)pRecvLength
+- (uint32_t) transfer:(const char*) szReader andSendData:(uint8_t *) sendData andSendLength:(uint32_t) sendLength andRecvData:(uint8_t *) recvData andPRecvLength:(uint32_t*) pRecvLength
 {
 #if TARGET_OS_OSX
     uint32_t res = SCARD_S_SUCCESS;
