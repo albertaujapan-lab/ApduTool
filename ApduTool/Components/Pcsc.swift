@@ -101,6 +101,10 @@ class Pcsc : NSObject
             activeCard?.transmit(Data(data), reply: { data, error in
                 getResponse?(data, error)
             })
+        } else {
+            let SCARD_E_NO_SMARTCARD = 0x8010000C
+            let error = NSError(domain: "", code: SCARD_E_NO_SMARTCARD, userInfo: [NSLocalizedDescriptionKey : "No active Card connection"])
+            getResponse?(nil, error)
         }
     }
     

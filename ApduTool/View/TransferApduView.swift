@@ -25,7 +25,7 @@ struct TransferApduView: View {
                 Button() {
                     if (pcsc.sendData.starts(with: "E0")) {
                         pcsc.transferEscapeCommand()
-                    } else if (pcsc.connected) {
+                    } else {
                         pcsc.transferApdu()
                     }
                 } label: {
