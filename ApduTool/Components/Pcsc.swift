@@ -87,17 +87,17 @@ class Pcsc : NSObject
     }
     
     public func stopSlotMonitor() {
-        if (activeCard != nil) {
+        if activeCard != nil {
             activeCard?.endSession()
             activeCard = nil
         }
-        if (slotObservation != nil) {
+        if slotObservation != nil {
             slotObservation = nil
         }
     }
     
     public func transferApdu(data: Data, getResponse: ((Data?, Error?) -> Void)?) {
-        if (activeCard != nil) {
+        if activeCard != nil {
             activeCard?.transmit(Data(data), reply: { data, error in
                 getResponse?(data, error)
             })
@@ -114,12 +114,12 @@ class Pcsc : NSObject
         let recvData = UnsafeMutablePointer<UInt8>.allocate(capacity: 256)
         let pRecvLength = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
         let result = escapeCommand.transfer(szReader, andSendData: sendData, andSendLength: (UInt32)(data.count), andRecvData: recvData, andPRecvLength: pRecvLength)
-        if (getResponse != nil) {
+        if getResponse != nil {
             var error: Error? = nil
             let data = Data(buffer: UnsafeMutableBufferPointer(start: recvData, count: (Int)(pRecvLength.pointee)))
             recvData.deallocate()
             pRecvLength.deallocate()
-            if (result != 0) {
+            if result != 0 {
                 error = NSError(domain: "", code: Int(result), userInfo: [NSLocalizedDescriptionKey : "Escape command transfer failure"])
             }
             getResponse?(data, error)

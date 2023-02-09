@@ -21,20 +21,20 @@ struct ReadersView: View {
             .frame(width: screenWidth * 0.6)
             .disabled(pcsc.connected)
             .onReceive(pcsc.slotNames.publisher, perform: { value in
-                if (!pcsc.slotNames.contains(pcsc.selectedReader)) {
+                if !pcsc.slotNames.contains(pcsc.selectedReader) {
                     pcsc.selectedReader = value
                 }
             })
             Text(pcsc.connected ? "Connected": "Not connected")
                 .frame(width: screenWidth * 0.15)
             Button() {
-                if (pcsc.connected) {
+                if pcsc.connected {
                     pcsc.disconnect()
                 } else {
                     pcsc.connect()
                 }
             } label: {
-                if (pcsc.connected) {
+                if pcsc.connected {
                     Text("Disconnect")
                 } else {
                     Text("Connect")
