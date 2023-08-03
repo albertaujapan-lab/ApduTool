@@ -5,7 +5,7 @@
 //  Created by Ken Cheung on 1/26/23.
 //
 
-import Foundation
+import SwiftUI
 
 extension Data {
     var bytes: [UInt8] {

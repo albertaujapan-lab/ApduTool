@@ -8,39 +8,79 @@
 import SwiftUI
 
 struct TransferApduView: View {
+#if !os(macOS)
+    @Environment(\.verticalSizeClass) var verticalSizeClass: UserInterfaceSizeClass?
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass: UserInterfaceSizeClass?
+#endif
     @EnvironmentObject var pcsc: PcscViewModel
     var screenWidth: CGFloat
+#if os(macOS)
+    func isLanscape() -> Bool { return true }
+#else
+    func isLanscape() -> Bool { return horizontalSizeClass == .regular }
+#endif
     var body: some View {
         VStack {
-            HStack {
-                Text("Send APDU:").frame(width: screenWidth * 0.15, alignment: .trailing)
-                TextField("", text: $pcsc.sendData)
-                    .labelsHidden()
-                    .textFieldStyle(.plain)
-                    .frame(width: screenWidth * 0.6, alignment: .leading)
-                    .border(.blue)
-                    .onChange(of: pcsc.sendData, perform: { newValue in
-                        pcsc.sendData = newValue.uppercased().filter("0123456789ABCDEF".contains)
-                    })
-                Button() {
-                    if pcsc.sendData.starts(with: "E0") {
-                        pcsc.transferEscapeCommand()
-                    } else {
-                        pcsc.transferApdu()
+            if isLanscape() {
+                HStack {
+                    Text("Send APDU:").frame(width: screenWidth * 0.15, alignment: .trailing)
+                    TextField("", text: $pcsc.sendData)
+                        .labelsHidden()
+                        .textFieldStyle(.plain)
+                        .frame(width: screenWidth * 0.6, alignment: .leading)
+                        .border(.blue)
+                        .onChange(of: pcsc.sendData, perform: { newValue in
+                            pcsc.sendData = newValue.uppercased().filter("0123456789ABCDEF".contains)
+                        })
+                    Button() {
+                        if pcsc.sendData.starts(with: "E0") {
+                            pcsc.transferEscapeCommand()
+                        } else {
+                            pcsc.transferApdu()
+                        }
+                    } label: {
+                        Text("Transmit")
                     }
-                } label: {
-                    Text("Transmit")
+                    .buttonStyle(.bordered)
+                    .frame(width: screenWidth * 0.15)
+                    Spacer()
                 }
-                .buttonStyle(.bordered)
-                .frame(width: screenWidth * 0.15)
-                Spacer()
-            }
-            HStack {
-                Text("Recv APDU:").frame(width: screenWidth * 0.15, alignment: .trailing)
-                Text(pcsc.recvData)
-                    .frame(width: screenWidth * 0.6, alignment: .leading)
-                    .border(.blue)
-                Spacer()
+                HStack {
+                    Text("Recv APDU:").frame(width: screenWidth * 0.15, alignment: .trailing)
+                    Text(pcsc.recvData)
+                        .frame(width: screenWidth * 0.6, alignment: .leading)
+                        .border(.blue)
+                    Spacer()
+                }
+            } else {
+                VStack {
+                    Text("Send APDU:")
+                        .frame(width: screenWidth * 9 / 10, alignment: .leading)
+                    TextField("", text: $pcsc.sendData)
+                        .labelsHidden()
+                        .textFieldStyle(.plain)
+                        .frame(width: screenWidth * 9 / 10, alignment: .leading)
+                        .border(.blue)
+                        .onChange(of: pcsc.sendData, perform: { newValue in
+                            pcsc.sendData = newValue.uppercased().filter("0123456789ABCDEF".contains)
+                        })
+                    Button() {
+                        if pcsc.sendData.starts(with: "E0") {
+                            pcsc.transferEscapeCommand()
+                        } else {
+                            pcsc.transferApdu()
+                        }
+                    } label: {
+                        Text("Transmit")
+                    }
+                    .buttonStyle(.bordered)
+                    .frame(width: screenWidth)
+                    Text("Recv APDU:")
+                        .frame(width: screenWidth * 9 / 10, alignment: .leading)
+                    Text(pcsc.recvData)
+                        .frame(width: screenWidth * 9 / 10, alignment: .leading)
+                        .border(.blue)
+                }
             }
         }
     }
