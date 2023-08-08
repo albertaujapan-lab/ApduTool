@@ -27,7 +27,7 @@ struct TransferApduView: View {
                     TextField("", text: $pcsc.sendData)
                         .labelsHidden()
                         .textFieldStyle(.plain)
-                        .frame(width: screenWidth * 0.6, alignment: .leading)
+                        .frame(width: screenWidth * 0.6, height: 28, alignment: .leading)
                         .border(.blue)
                         .onChange(of: pcsc.sendData, perform: { newValue in
                             pcsc.sendData = newValue.uppercased().filter("0123456789ABCDEF".contains)
@@ -48,18 +48,21 @@ struct TransferApduView: View {
                 HStack {
                     Text("Recv APDU:").frame(width: screenWidth * 0.15, alignment: .trailing)
                     Text(pcsc.recvData)
-                        .frame(width: screenWidth * 0.6, alignment: .leading)
+                        .frame(width: screenWidth * 0.6, height: 28, alignment: .leading)
                         .border(.blue)
                     Spacer()
                 }
             } else {
                 VStack {
                     Text("Send APDU:")
-                        .frame(width: screenWidth * 9 / 10, alignment: .leading)
+                        .frame(width: screenWidth * 9 / 10, height: 32, alignment: .leading)
                     TextField("", text: $pcsc.sendData)
                         .labelsHidden()
                         .textFieldStyle(.plain)
-                        .frame(width: screenWidth * 9 / 10, alignment: .leading)
+                        .font(.system(size: 20))
+                        .monospaced()
+                        .padding(4)
+                        .frame(width: screenWidth * 9 / 10, height: 32, alignment: .leading)
                         .border(.blue)
                         .onChange(of: pcsc.sendData, perform: { newValue in
                             pcsc.sendData = newValue.uppercased().filter("0123456789ABCDEF".contains)
@@ -78,7 +81,9 @@ struct TransferApduView: View {
                     Text("Recv APDU:")
                         .frame(width: screenWidth * 9 / 10, alignment: .leading)
                     Text(pcsc.recvData)
-                        .frame(width: screenWidth * 9 / 10, alignment: .leading)
+                        .font(.system(size: 20))
+                        .padding(4)
+                        .frame(width: screenWidth * 9 / 10, height: 32, alignment: .leading)
                         .border(.blue)
                 }
             }

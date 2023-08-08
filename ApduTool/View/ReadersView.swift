@@ -36,7 +36,7 @@ struct ReadersView: View {
                     }
                 })
                 Text(pcsc.connected ? "Connected": "Not connected")
-                    .frame(width: screenWidth * 0.15)
+                    .frame(width: screenWidth * 0.15, height: 32)
                 Button() {
                     if pcsc.connected {
                         pcsc.disconnect()
@@ -62,7 +62,7 @@ struct ReadersView: View {
                     }
                 }
                 .pickerStyle(.inline)
-                .frame(height: 30)
+                .frame(height: 40)
                 .disabled(pcsc.connected)
                 .onReceive(pcsc.slotNames.publisher, perform: { value in
                     if !pcsc.slotNames.contains(pcsc.selectedReader) {
