@@ -117,12 +117,13 @@ class Pcsc : NSObject
         if getResponse != nil {
             var error: Error? = nil
             let data = Data(buffer: UnsafeMutableBufferPointer(start: recvData, count: (Int)(pRecvLength.pointee)))
-            recvData.deallocate()
-            pRecvLength.deallocate()
             if result != 0 {
                 error = NSError(domain: "", code: Int(result), userInfo: [NSLocalizedDescriptionKey : "Escape command transfer failure"])
             }
             getResponse?(data, error)
         }
+        recvData.deallocate()
+        pRecvLength.deallocate()
+        szReader.deallocate()
     }
 }
