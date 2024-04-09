@@ -45,3 +45,7 @@ extension [UInt8] {
         return hexString
     }
 }
+
+extension Color {
+    static let backgroundColor = Color("BackgroundColor")
+}

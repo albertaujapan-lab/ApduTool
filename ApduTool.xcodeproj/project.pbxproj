@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC0D2C532BC533910094E7F2 /* SelectFileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0D2C522BC533910094E7F2 /* SelectFileView.swift */; };
 		AC3567FE2BC37CF800479D16 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3567FD2BC37CF800479D16 /* LogView.swift */; };
 		AC3568002BC3873B00479D16 /* Script.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3567FF2BC3873B00479D16 /* Script.swift */; };
 		AC3568022BC389BF00479D16 /* ScriptButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3568012BC389BF00479D16 /* ScriptButtonView.swift */; };
@@ -46,6 +47,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AC0D2C522BC533910094E7F2 /* SelectFileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectFileView.swift; sourceTree = "<group>"; };
 		AC3567FD2BC37CF800479D16 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		AC3567FF2BC3873B00479D16 /* Script.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Script.swift; sourceTree = "<group>"; };
 		AC3568012BC389BF00479D16 /* ScriptButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptButtonView.swift; sourceTree = "<group>"; };
@@ -197,6 +199,7 @@
 				AC3567FD2BC37CF800479D16 /* LogView.swift */,
 				AC3568012BC389BF00479D16 /* ScriptButtonView.swift */,
 				AC3568032BC3BD7900479D16 /* ToastView.swift */,
+				AC0D2C522BC533910094E7F2 /* SelectFileView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -333,6 +336,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ACA200EE29822FEC0066399A /* ContentView.swift in Sources */,
+				AC0D2C532BC533910094E7F2 /* SelectFileView.swift in Sources */,
 				ACA20118298231370066399A /* Pcsc.swift in Sources */,
 				ACA200EC29822FEC0066399A /* ApduToolApp.swift in Sources */,
 				ACFD702E2987540F00002153 /* PcscViewModel.swift in Sources */,
@@ -512,7 +516,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ApduTool/Info.plist;
-				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Read script file";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "Read script file";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -555,7 +559,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ApduTool/Info.plist;
-				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Read script file";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "Read script file";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

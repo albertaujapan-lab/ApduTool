@@ -21,6 +21,10 @@ struct ContentView: View {
                     LogView()
                     Spacer()
                 }
+                if pcsc.showSelectFile {
+                    SelectFileView()
+                        .environmentObject(pcsc)
+                }
                 if pcsc.showToast {
                     ToastView(message: $pcsc.toastMessage)
                 }
