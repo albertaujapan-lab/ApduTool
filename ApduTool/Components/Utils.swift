@@ -25,6 +25,14 @@ extension StringProtocol {
     var trimSpaces: String {
         return self.replacingOccurrences(of: " ", with: "")
     }
+    
+    func subString(_ index: Int, _ length: Int) -> String {
+        let l = index + length > self.count ? self.count - index : length
+        let start = self.index(self.startIndex, offsetBy: index)
+        let end = self.index(self.endIndex, offsetBy: index + l - self.count)
+        let range = start..<end
+        return String(self[range])
+    }
 }
 
 extension [UInt8] {

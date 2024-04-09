@@ -8,14 +8,22 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var pcsc: PcscViewModel
     var body: some View {
         GeometryReader { screen in
             let screenWidth = screen.size.width
-            VStack {
-                ReadersView(screenWidth: screenWidth)
-                TransferApduView(screenWidth: screenWidth)
-                StateView().padding(.top)
-                Spacer()
+            ZStack {
+                VStack {
+                    ReadersView(screenWidth: screenWidth)
+                    TransferApduView(screenWidth: screenWidth)
+                    StateView().padding(.top)
+                    ScriptButtonView()
+                    LogView()
+                    Spacer()
+                }
+                if pcsc.showToast {
+                    ToastView(message: $pcsc.toastMessage)
+                }
             }
         }.padding(.horizontal)
     }

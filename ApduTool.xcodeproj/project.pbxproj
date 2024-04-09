@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC3567FE2BC37CF800479D16 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3567FD2BC37CF800479D16 /* LogView.swift */; };
+		AC3568002BC3873B00479D16 /* Script.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3567FF2BC3873B00479D16 /* Script.swift */; };
+		AC3568022BC389BF00479D16 /* ScriptButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3568012BC389BF00479D16 /* ScriptButtonView.swift */; };
+		AC3568042BC3BD7900479D16 /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3568032BC3BD7900479D16 /* ToastView.swift */; };
 		ACA200EC29822FEC0066399A /* ApduToolApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA200EB29822FEC0066399A /* ApduToolApp.swift */; };
 		ACA200EE29822FEC0066399A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA200ED29822FEC0066399A /* ContentView.swift */; };
 		ACA200F029822FED0066399A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACA200EF29822FED0066399A /* Assets.xcassets */; };
@@ -42,6 +46,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AC3567FD2BC37CF800479D16 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		AC3567FF2BC3873B00479D16 /* Script.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Script.swift; sourceTree = "<group>"; };
+		AC3568012BC389BF00479D16 /* ScriptButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptButtonView.swift; sourceTree = "<group>"; };
+		AC3568032BC3BD7900479D16 /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
 		ACA200E829822FEC0066399A /* ApduTool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ApduTool.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACA200EB29822FEC0066399A /* ApduToolApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApduToolApp.swift; sourceTree = "<group>"; };
 		ACA200ED29822FEC0066399A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -166,6 +174,7 @@
 				ACA2011A298256860066399A /* Utils.swift */,
 				ACD1AE3729909067003EA150 /* EscapeCommand.h */,
 				ACD1AE3829909067003EA150 /* EscapeCommand.m */,
+				AC3567FF2BC3873B00479D16 /* Script.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -185,6 +194,9 @@
 				ACFD70292983810700002153 /* ReadersView.swift */,
 				ACFD702B2983823E00002153 /* TransferApduView.swift */,
 				ACB51C472987750800AC0AFB /* StateView.swift */,
+				AC3567FD2BC37CF800479D16 /* LogView.swift */,
+				AC3568012BC389BF00479D16 /* ScriptButtonView.swift */,
+				AC3568032BC3BD7900479D16 /* ToastView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -253,7 +265,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1530;
 				TargetAttributes = {
 					ACA200E729822FEC0066399A = {
 						CreatedOnToolsVersion = 14.2;
@@ -324,12 +336,16 @@
 				ACA20118298231370066399A /* Pcsc.swift in Sources */,
 				ACA200EC29822FEC0066399A /* ApduToolApp.swift in Sources */,
 				ACFD702E2987540F00002153 /* PcscViewModel.swift in Sources */,
+				AC3568002BC3873B00479D16 /* Script.swift in Sources */,
 				ACD1AE3929909067003EA150 /* EscapeCommand.m in Sources */,
 				ACA2011E29826DD20066399A /* Apdu.swift in Sources */,
 				ACA2011B298256860066399A /* Utils.swift in Sources */,
+				AC3568042BC3BD7900479D16 /* ToastView.swift in Sources */,
 				ACB51C482987750800AC0AFB /* StateView.swift in Sources */,
 				ACFD702C2983823E00002153 /* TransferApduView.swift in Sources */,
+				AC3567FE2BC37CF800479D16 /* LogView.swift in Sources */,
 				ACFD702A2983810700002153 /* ReadersView.swift in Sources */,
+				AC3568022BC389BF00479D16 /* ScriptButtonView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -370,6 +386,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -430,6 +447,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -494,6 +512,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ApduTool/Info.plist;
+				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Read script file";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -508,7 +527,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduTool;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -536,6 +555,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ApduTool/Info.plist;
+				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "Read script file";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -550,7 +570,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduTool;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
