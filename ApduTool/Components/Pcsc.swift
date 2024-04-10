@@ -19,34 +19,34 @@ class Pcsc : NSObject
     var updateCardSlots: ((TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void)?
     var getConnectResponse: ((Bool) -> Void)?
     var getCardInfo: ((TKSmartCardSlot.State?, Error?) -> Void)?
-
+    
     override init() {
         super.init()
         managerObservation = mngr?.observe(\.slotNames, options: .initial, changeHandler: updateCardSlots)
     }
-
+    
     func setUpdateCardSlots(_ function: @escaping (TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void) {
         updateCardSlots = function
     }
-
+    
     func getSlotNames() -> [String] {
         return mngr?.slotNames.filter({ name in
             return name.starts(with: "ACS")
         }) ?? []
     }
-
+    
     func getAtr() -> String {
         return currentSlot?.atr?.bytes.bytes.hexString ?? ""
     }
-
+    
     func getCurrentProtocol() -> TKSmartCardProtocol {
         return activeCard?.currentProtocol ?? TKSmartCardProtocol.any
     }
-
+    
     private func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
         updateCardSlots?(manager, change)
     }
-
+    
     private func monitorCard() -> NSKeyValueObservation? {
         return self.currentSlot?.observe(\.state, options: .initial) { _, _ in
             if let state = self.currentSlot?.state {
@@ -75,7 +75,7 @@ class Pcsc : NSObject
             }
         }
     }
-
+    
     public func startSlotMonitor(readerName: String, getConnectResponse: @escaping((Bool) -> Void), getCardInfo: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
         self.getConnectResponse = getConnectResponse
         self.getCardInfo = getCardInfo
@@ -85,7 +85,7 @@ class Pcsc : NSObject
             self.getConnectResponse?(self.slotObservation != nil)
         }
     }
-
+    
     public func stopSlotMonitor() {
         if activeCard != nil {
             activeCard?.endSession()
@@ -95,39 +95,57 @@ class Pcsc : NSObject
             slotObservation = nil
         }
     }
-
+    
     private func divideAPDU(_ apdu: [UInt8]) -> (ins: UInt8, cla: UInt8, p1: UInt8, p2: UInt8, data: Data?, le: Int?) {
-        // Check if APDU has minimum required length
-        guard apdu.count >= 4 else {
-            fatalError("Invalid APDU length")
-        }
-
         // Extract INS, CLA, P1, P2, and LE from APDU
         let cla = apdu[0]
         let ins = apdu[1]
         let p1 = apdu[2]
         let p2 = apdu[3]
-        let lc = apdu[4]
+        var lc: Int = Int(apdu[4])
         var data: Data?
         var le: Int?
-
+        let extendedApdu = lc == 0
+        let dataOffset = extendedApdu ? 7 : 5
+        
         if apdu.count > 4 {
-            if apdu.count > 5 && apdu.count >= 5 + lc {
-                data = Data(Array(apdu[5..<(5 + Int(lc))]))
-                if apdu.count > 5 + data!.count {
-                    le = Int(apdu[5 + data!.count])
+            if apdu.count > dataOffset {
+                if extendedApdu {
+                    lc = (Int(apdu[5]) << 8) + Int(apdu[6])
+                }
+                if apdu.count >= dataOffset + lc {
+                    data = Data(Array(apdu[dataOffset..<(dataOffset + lc)]))
+                    if apdu.count > dataOffset + lc {
+                        let leOffset = dataOffset + lc
+                        if extendedApdu {
+                            le = (Int(apdu[leOffset]) << 8) + Int(apdu[leOffset + 1])
+                        } else {
+                            le = Int(apdu[leOffset])
+                        }
+                    }
                 }
             }
-            else {
-                le = Int(apdu[apdu.count - 1])
+            else if apdu.count == dataOffset {
+                let leOffset = dataOffset - (extendedApdu ? 2 : 1)
+                if extendedApdu {
+                    le = (Int(apdu[leOffset]) << 8) + Int(apdu[leOffset + 1])
+                } else {
+                    le = Int(apdu[leOffset])
+                }
             }
         }
-
+        
         return (ins, cla, p1, p2, data, le)
     }
-
+    
     public func transferApdu(data: Data, getResponse: ((Data?, Error?) -> Void)?) {
         if activeCard != nil {
+            guard data.count >= 4 else {
+                let SCARD_E_INVALID_PARAMETER = 0x80100004
+                let error = NSError(domain: "", code: SCARD_E_INVALID_PARAMETER, userInfo: [NSLocalizedDescriptionKey : "Invalid parameter"])
+                getResponse?(nil, error)
+                return
+            }
             let (ins, cla, p1, p2, sendData, le) = divideAPDU(data.bytes)
             if cla == 0 {
                 activeCard?.send(ins: ins, p1: p1, p2: p2, data: sendData, le: le, reply: { replyData, sw, error in
@@ -151,7 +169,7 @@ class Pcsc : NSObject
             getResponse?(nil, error)
         }
     }
-
+    
     public func transferEscapeCommand(readerName: String, data: Data, getResponse: ((Data?, Error?) -> Void)?) {
         let szReader = (UnsafePointer<CChar>)(strdup(readerName)!)
         let sendData = (UnsafeMutablePointer<UInt8>)(mutating: NSData(bytes: data.bytes, length: data.count).bytes.assumingMemoryBound(to: UInt8.self))
