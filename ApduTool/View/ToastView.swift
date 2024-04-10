@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ToastView: View {
     @Binding var message: String
-
+    
     var body: some View {
         Text(message)
             .padding()

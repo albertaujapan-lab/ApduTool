@@ -13,15 +13,15 @@ class Script {
             let fileContents = try String(contentsOfFile: path, encoding: .utf8)
             let lines = fileContents.components(separatedBy: .newlines)
             var parsedLines: [String] = []
-
+            
             for line in lines {
                 let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
-
+                
                 if !trimmedLine.isEmpty && !trimmedLine.starts(with: ";") {
                     parsedLines.append(trimmedLine)
                 }
             }
-
+            
             return parsedLines
         } catch {
             print("Error reading file: \(error)")

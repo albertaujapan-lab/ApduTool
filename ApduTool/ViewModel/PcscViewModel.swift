@@ -17,7 +17,7 @@ class PcscViewModel: ObservableObject {
         case muteCard = "Muted"
         case probing = "Probing"
     }
-
+    
     struct CardInfo {
         var atr: String = ""
         var currentProtocol: String = ""
@@ -41,12 +41,12 @@ class PcscViewModel: ObservableObject {
     var apdu: Apdu = Apdu()
     var pcsc: Pcsc = Pcsc()
     var script: Script = Script()
-
+    
     init() {
         slotNames = pcsc.getSlotNames()
         pcsc.setUpdateCardSlots(self.updateCardSlots)
     }
-
+    
     func addMessage(text: String) {
         DispatchQueue.main.async { [self] in
             if text != "" {
@@ -59,20 +59,20 @@ class PcscViewModel: ObservableObject {
             }
         }
     }
-
+    
     func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
         DispatchQueue.main.async { [self] in
             slotNames = pcsc.getSlotNames()
         }
     }
-
+    
     func getConnectResponse(res: Bool) {
         DispatchQueue.main.async { [self] in
             connected = res
             addMessage(text: "")
         }
     }
-
+    
     func getResponse(data: Data?, error: Error?) {
         DispatchQueue.main.async { [self] in
             apdu.recvData = data?.bytes ?? []
@@ -85,7 +85,7 @@ class PcscViewModel: ObservableObject {
             }
         }
     }
-
+    
     private func getProtocolString(_ cardProtocol: TKSmartCardProtocol) -> String {
         switch(cardProtocol) {
         case TKSmartCardProtocol.t0:
@@ -98,7 +98,7 @@ class PcscViewModel: ObservableObject {
             return "Any"
         }
     }
-
+    
     func getCardInfo(state: TKSmartCardSlot.State?, error: Error?) {
         DispatchQueue.main.async { [self] in
             if (state != nil) {
@@ -126,7 +126,7 @@ class PcscViewModel: ObservableObject {
             }
         }
     }
-
+    
     func transferApdu() {
         apdu.sendData = sendData.hexBytes
         recvData = ""
@@ -134,25 +134,25 @@ class PcscViewModel: ObservableObject {
         addMessage(text: "< \(sendData)")
         pcsc.transferApdu(data: Data(apdu.sendData), getResponse: getResponse)
     }
-
+    
     func transferEscapeCommand() {
         apdu.sendData = sendData.hexBytes
         recvData = ""
         status = ""
         pcsc.transferEscapeCommand(readerName: selectedReader, data: Data(apdu.sendData), getResponse: getResponse)
     }
-
+    
     func connect() {
         status = ""
         pcsc.startSlotMonitor(readerName: selectedReader, getConnectResponse: getConnectResponse, getCardInfo: getCardInfo)
     }
-
+    
     func disconnect() {
         pcsc.stopSlotMonitor()
         connected = false
         cardInfo = CardInfo()
     }
-
+    
     private func specCompare(_ expStr: String, _ cmpStr: String) -> Bool {
         if expStr.subString(0, 1) == "*" {
             return true
@@ -171,7 +171,7 @@ class PcscViewModel: ObservableObject {
         }
         return true
     }
-
+    
     private func getScriptResponse(data: Data?, error: Error?) {
         DispatchQueue.main.async { [self] in
             apdu.recvData = data?.bytes ?? []
@@ -195,7 +195,7 @@ class PcscViewModel: ObservableObject {
             }
         }
     }
-
+    
     func runScript() {
         if connected {
             if !processing {
@@ -214,12 +214,12 @@ class PcscViewModel: ObservableObject {
             }
         }
     }
-
+    
     func documentDirectory() -> String {
         let documentDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
         return documentDirectory[0]
     }
-
+    
     func append(toPath path: String, withPathComponent pathComponent: String) -> String? {
         if var pathURL = URL(string: path) {
             pathURL = pathURL.appendingPathComponent(pathComponent)
@@ -227,19 +227,19 @@ class PcscViewModel: ObservableObject {
         }
         return nil
     }
-
+    
     func getFileNames() -> [String] {
         let documentURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         do {
             let fileURLs = try FileManager.default.contentsOfDirectory(at: documentURL, includingPropertiesForKeys: nil)
-            let fileNames = fileURLs.map { $0.lastPathComponent}
+            let fileNames = fileURLs.map { $0.lastPathComponent }
             return fileNames
         } catch {
             print("Error while enumerating files: \(error.localizedDescription)")
             return []
         }
     }
-
+    
     func saveLog() -> (result: Bool, error: String?) {
         guard let filePath = append(toPath: documentDirectory(), withPathComponent: "apdulog.txt") else {
             return (false, "Path not found")
@@ -252,7 +252,7 @@ class PcscViewModel: ObservableObject {
         }
         return (true, nil)
     }
-
+    
     func showToast(_ message: String) {
         DispatchQueue.main.async { [self] in
             toastMessage = message

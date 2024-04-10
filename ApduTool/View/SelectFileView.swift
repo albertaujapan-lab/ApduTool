@@ -52,7 +52,7 @@ struct SelectFileView: View {
             .padding()
         }
     }
-
+    
     func runScript(_ scriptFile: String) {
         if scriptFile != "" {
             pcsc.scriptFile = pcsc.append(toPath: pcsc.documentDirectory(), withPathComponent: scriptFile) ?? ""
