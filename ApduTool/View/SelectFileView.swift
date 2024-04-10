@@ -15,18 +15,18 @@ struct SelectFileView: View {
     var body: some View {
         GeometryReader { screen in
             VStack(alignment: .center) {
+                HStack {
+                    Spacer()
+                    Button() {
+                        runScript(selectedFile)
+                    } label: {
+                        Text("Open")
+                    }
+                    .buttonStyle(.bordered)
+                    .padding()
+                }
                 ScrollView {
                     VStack(spacing: 20) {
-                        HStack {
-                            Spacer()
-                            Button() {
-                                runScript(selectedFile)
-                            } label: {
-                                Text("Open")
-                            }
-                            .buttonStyle(.bordered)
-                            .padding(.horizontal)
-                        }
                         ForEach(fileNames, id: \.self) { fileName in
                             Text(fileName)
                                 .font(.title2)
@@ -40,15 +40,16 @@ struct SelectFileView: View {
                         }
                     }
                 }
-                .background {
-                    Color.backgroundColor
-                }
-                .opacity(1.0)
                 .onAppear {
                     fileNames = pcsc.getFileNames()
                 }
             }
+            .background {
+                Color.backgroundColor
+            }
+            .opacity(1.0)
             .shadow(color: Color.black.opacity(0.3), radius: 15, x: 0, y: 2)
+            .padding()
         }
     }
 
