@@ -19,34 +19,34 @@ class Pcsc : NSObject
     var updateCardSlots: ((TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void)?
     var getConnectResponse: ((Bool) -> Void)?
     var getCardInfo: ((TKSmartCardSlot.State?, Error?) -> Void)?
-    
+
     override init() {
         super.init()
         managerObservation = mngr?.observe(\.slotNames, options: .initial, changeHandler: updateCardSlots)
     }
-    
+
     func setUpdateCardSlots(_ function: @escaping (TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void) {
         updateCardSlots = function
     }
-    
+
     func getSlotNames() -> [String] {
         return mngr?.slotNames.filter({ name in
             return name.starts(with: "ACS")
         }) ?? []
     }
-    
+
     func getAtr() -> String {
         return currentSlot?.atr?.bytes.bytes.hexString ?? ""
     }
-    
+
     func getCurrentProtocol() -> TKSmartCardProtocol {
         return activeCard?.currentProtocol ?? TKSmartCardProtocol.any
     }
-    
+
     private func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
         updateCardSlots?(manager, change)
     }
-    
+
     private func monitorCard() -> NSKeyValueObservation? {
         return self.currentSlot?.observe(\.state, options: .initial) { _, _ in
             if let state = self.currentSlot?.state {
@@ -75,7 +75,7 @@ class Pcsc : NSObject
             }
         }
     }
-    
+
     public func startSlotMonitor(readerName: String, getConnectResponse: @escaping((Bool) -> Void), getCardInfo: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
         self.getConnectResponse = getConnectResponse
         self.getCardInfo = getCardInfo
@@ -85,7 +85,7 @@ class Pcsc : NSObject
             self.getConnectResponse?(self.slotObservation != nil)
         }
     }
-    
+
     public func stopSlotMonitor() {
         if activeCard != nil {
             activeCard?.endSession()
@@ -95,7 +95,7 @@ class Pcsc : NSObject
             slotObservation = nil
         }
     }
-    
+
     private func divideAPDU(_ apdu: [UInt8]) -> (ins: UInt8, cla: UInt8, p1: UInt8, p2: UInt8, data: Data?, le: Int?) {
         // Extract INS, CLA, P1, P2, and LE from APDU
         let cla = apdu[0]
@@ -107,7 +107,7 @@ class Pcsc : NSObject
         var le: Int?
         let extendedApdu = lc == 0
         let dataOffset = extendedApdu ? 7 : 5
-        
+
         if apdu.count > 4 {
             if apdu.count > dataOffset {
                 if extendedApdu {
@@ -134,10 +134,10 @@ class Pcsc : NSObject
                 }
             }
         }
-        
+
         return (ins, cla, p1, p2, data, le)
     }
-    
+
     public func transferApdu(data: Data, getResponse: ((Data?, Error?) -> Void)?) {
         if activeCard != nil {
             guard data.count >= 4 else {
@@ -147,29 +147,24 @@ class Pcsc : NSObject
                 return
             }
             let (ins, cla, p1, p2, sendData, le) = divideAPDU(data.bytes)
-            if cla == 0 {
-                activeCard?.send(ins: ins, p1: p1, p2: p2, data: sendData, le: le, reply: { replyData, sw, error in
-                    // Extract SW1 and SW2 from the status word
-                    let sw1: UInt8 = UInt8(sw >> 8 & 0xFF)
-                    let sw2: UInt8 = UInt8(sw & 0xFF)
-                    // Combine the reply data and status word into a single Data object
-                    var responseData = Data()
-                    responseData.append(replyData ?? Data())
-                    responseData.append(Data([sw1, sw2]))
-                    getResponse?(responseData, error)
-                })
-            } else {
-                activeCard?.transmit(Data(data), reply: { data, error in
-                    getResponse?(data, error)
-                })
-            }
+            activeCard?.cla = cla
+            activeCard?.send(ins: ins, p1: p1, p2: p2, data: sendData, le: le, reply: { replyData, sw, error in
+                // Extract SW1 and SW2 from the status word
+                let sw1: UInt8 = UInt8(sw >> 8 & 0xFF)
+                let sw2: UInt8 = UInt8(sw & 0xFF)
+                // Combine the reply data and status word into a single Data object
+                var responseData = Data()
+                responseData.append(replyData ?? Data())
+                responseData.append(Data([sw1, sw2]))
+                getResponse?(responseData, error)
+            })
         } else {
             let SCARD_E_NO_SMARTCARD = 0x8010000C
             let error = NSError(domain: "", code: SCARD_E_NO_SMARTCARD, userInfo: [NSLocalizedDescriptionKey : "No active Card connection"])
             getResponse?(nil, error)
         }
     }
-    
+
     public func transferEscapeCommand(readerName: String, data: Data, getResponse: ((Data?, Error?) -> Void)?) {
         let szReader = (UnsafePointer<CChar>)(strdup(readerName)!)
         let sendData = (UnsafeMutablePointer<UInt8>)(mutating: NSData(bytes: data.bytes, length: data.count).bytes.assumingMemoryBound(to: UInt8.self))
