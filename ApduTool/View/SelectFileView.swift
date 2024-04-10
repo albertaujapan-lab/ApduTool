@@ -16,6 +16,13 @@ struct SelectFileView: View {
         GeometryReader { screen in
             VStack(alignment: .center) {
                 HStack {
+                    Button() {
+                        pcsc.showSelectFile.toggle()
+                    } label: {
+                        Text("Back")
+                    }
+                    .buttonStyle(.bordered)
+                    .padding()
                     Spacer()
                     Button() {
                         runScript(selectedFile)
