@@ -163,6 +163,8 @@ class Pcsc : NSObject
             if tpduReader {
                 let (cla, ins, p1, p2, sendData, le) = divideAPDU(data.bytes)
                 activeCard?.cla = cla
+                activeCard?.useExtendedLength = true
+                activeCard?.useCommandChaining = true
                 activeCard?.send(ins: ins, p1: p1, p2: p2, data: sendData, le: le, reply: { replyData, sw, error in
                     // Extract SW1 and SW2 from the status word
                     let sw1: UInt8 = UInt8(sw >> 8 & 0xFF)
