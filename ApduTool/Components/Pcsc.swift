@@ -106,7 +106,7 @@ class Pcsc : NSObject
         }
     }
     
-    private func divideAPDU(_ apdu: [UInt8]) -> (cla: UInt8, ins: UInt8, p1: UInt8, p2: UInt8, data: Data?, le: Int?) {
+    private func divideAPDU(_ apdu: [UInt8]) -> (cla: UInt8, ins: UInt8, p1: UInt8, p2: UInt8, data: Data?, le: Int?, extendedApdu: Bool) {
         // Extract INS, CLA, P1, P2, and LE from APDU
         let cla = apdu[0]
         let ins = apdu[1]
@@ -149,7 +149,7 @@ class Pcsc : NSObject
             }
         }
         
-        return (cla, ins, p1, p2, data, le)
+        return (cla, ins, p1, p2, data, le, extendedApdu)
     }
     
     public func transferApdu(data: Data, getResponse: ((Data?, Error?) -> Void)?) {
@@ -161,9 +161,9 @@ class Pcsc : NSObject
                 return
             }
             if tpduReader {
-                let (cla, ins, p1, p2, sendData, le) = divideAPDU(data.bytes)
+                let (cla, ins, p1, p2, sendData, le, extendedApdu) = divideAPDU(data.bytes)
                 activeCard?.cla = cla
-                activeCard?.useExtendedLength = true
+                activeCard?.useExtendedLength = extendedApdu
                 activeCard?.useCommandChaining = true
                 activeCard?.send(ins: ins, p1: p1, p2: p2, data: sendData, le: le, reply: { replyData, sw, error in
                     // Extract SW1 and SW2 from the status word
