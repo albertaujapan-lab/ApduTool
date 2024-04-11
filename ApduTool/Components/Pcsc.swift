@@ -112,13 +112,15 @@ class Pcsc : NSObject
         let ins = apdu[1]
         let p1 = apdu[2]
         let p2 = apdu[3]
-        var lc: Int = Int(apdu[4])
+        var lc: Int = 0
         var data: Data?
         var le: Int?
-        let extendedApdu = lc == 0
-        let dataOffset = extendedApdu ? 7 : 5
-        
+        var extendedApdu: Bool = false
+
         if apdu.count > 4 {
+            lc = Int(apdu[4])
+            extendedApdu = lc == 0
+            let dataOffset = extendedApdu ? 7 : 5
             if apdu.count > dataOffset {
                 if extendedApdu {
                     lc = (Int(apdu[5]) << 8) + Int(apdu[6])
@@ -158,8 +160,8 @@ class Pcsc : NSObject
                 getResponse?(nil, error)
                 return
             }
-            let (cla, ins, p1, p2, sendData, le) = divideAPDU(data.bytes)
             if tpduReader {
+                let (cla, ins, p1, p2, sendData, le) = divideAPDU(data.bytes)
                 activeCard?.cla = cla
                 activeCard?.send(ins: ins, p1: p1, p2: p2, data: sendData, le: le, reply: { replyData, sw, error in
                     // Extract SW1 and SW2 from the status word
