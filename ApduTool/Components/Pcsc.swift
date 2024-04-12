@@ -134,8 +134,6 @@ class Pcsc : NSObject
                         } else {
                             le = Int(apdu[leOffset])
                         }
-                    } else {
-                        le = 0
                     }
                 }
             }
@@ -148,7 +146,6 @@ class Pcsc : NSObject
                 }
             }
         }
-        
         return (cla, ins, p1, p2, data, le, extendedApdu)
     }
     
