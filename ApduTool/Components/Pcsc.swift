@@ -20,34 +20,34 @@ class Pcsc : NSObject
     var getConnectResponse: ((Bool) -> Void)?
     var getCardInfo: ((TKSmartCardSlot.State?, Error?) -> Void)?
     var tpduReader: Bool = false
-    
+
     override init() {
         super.init()
         managerObservation = mngr?.observe(\.slotNames, options: .initial, changeHandler: updateCardSlots)
     }
-    
+
     func setUpdateCardSlots(_ function: @escaping (TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void) {
         updateCardSlots = function
     }
-    
+
     func getSlotNames() -> [String] {
         return mngr?.slotNames.filter({ name in
             return name.starts(with: "ACS")
         }) ?? []
     }
-    
+
     func getAtr() -> String {
         return currentSlot?.atr?.bytes.bytes.hexString ?? ""
     }
-    
+
     func getCurrentProtocol() -> TKSmartCardProtocol {
         return activeCard?.currentProtocol ?? TKSmartCardProtocol.any
     }
-    
+
     private func updateCardSlots(manager: TKSmartCardSlotManager, change: NSKeyValueObservedChange<[String]>) {
         updateCardSlots?(manager, change)
     }
-    
+
     private func isTPDUReader() -> Bool {
         if let readerName = currentSlot?.name {
             return readerName.contains("ACR40") || readerName.contains("ACR39") || readerName.contains("ACR38")
@@ -55,7 +55,7 @@ class Pcsc : NSObject
             return false
         }
     }
-    
+
     private func monitorCard() -> NSKeyValueObservation? {
         return self.currentSlot?.observe(\.state, options: .initial) { _, _ in
             if let state = self.currentSlot?.state {
@@ -85,7 +85,7 @@ class Pcsc : NSObject
             }
         }
     }
-    
+
     public func startSlotMonitor(readerName: String, getConnectResponse: @escaping((Bool) -> Void), getCardInfo: @escaping((TKSmartCardSlot.State?, Error?) -> Void)) {
         self.getConnectResponse = getConnectResponse
         self.getCardInfo = getCardInfo
@@ -95,7 +95,7 @@ class Pcsc : NSObject
             self.getConnectResponse?(self.slotObservation != nil)
         }
     }
-    
+
     public func stopSlotMonitor() {
         if activeCard != nil {
             activeCard?.endSession()
@@ -105,7 +105,7 @@ class Pcsc : NSObject
             slotObservation = nil
         }
     }
-    
+
     private func divideAPDU(_ apdu: [UInt8]) -> (cla: UInt8, ins: UInt8, p1: UInt8, p2: UInt8, data: Data?, le: Int?, extendedApdu: Bool) {
         // Extract INS, CLA, P1, P2, and LE from APDU
         let cla = apdu[0]
@@ -129,26 +129,26 @@ class Pcsc : NSObject
                     data = Data(Array(apdu[dataOffset..<(dataOffset + lc)]))
                     if apdu.count > dataOffset + lc + (extendedApdu ? 1 : 0) {
                         let leOffset = dataOffset + lc
-                        if extendedApdu {
+                        if extendedApdu { // Case 4E
                             le = (Int(apdu[leOffset]) << 8) + Int(apdu[leOffset + 1])
-                        } else {
+                        } else { // Case 4S
                             le = Int(apdu[leOffset])
                         }
-                    }
+                    } // else Case 3S or 3E
                 }
             }
             else if apdu.count == dataOffset {
                 let leOffset = dataOffset - (extendedApdu ? 2 : 1)
-                if extendedApdu {
+                if extendedApdu { // Case 2E
                     le = (Int(apdu[leOffset]) << 8) + Int(apdu[leOffset + 1])
-                } else {
+                } else { // Case 2S
                     le = Int(apdu[leOffset])
                 }
             }
-        }
+        } // else Case 1
         return (cla, ins, p1, p2, data, le, extendedApdu)
     }
-    
+
     public func transferApdu(data: Data, getResponse: ((Data?, Error?) -> Void)?) {
         if activeCard != nil {
             guard data.count >= 4 else {
@@ -183,7 +183,7 @@ class Pcsc : NSObject
             getResponse?(nil, error)
         }
     }
-    
+
     public func transferEscapeCommand(readerName: String, data: Data, getResponse: ((Data?, Error?) -> Void)?) {
         let szReader = (UnsafePointer<CChar>)(strdup(readerName)!)
         let sendData = (UnsafeMutablePointer<UInt8>)(mutating: NSData(bytes: data.bytes, length: data.count).bytes.assumingMemoryBound(to: UInt8.self))
