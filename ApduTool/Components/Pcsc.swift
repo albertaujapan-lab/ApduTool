@@ -51,7 +51,7 @@ class Pcsc : NSObject
     private func isTPDUReader() -> Bool {
         if let readerName = currentSlot?.name {
             return readerName.contains("ACR40") || readerName.contains("ACR39") || readerName.contains("ACR38") ||
-            readerName.contains("ACM40") || readerName.contains("ACM39")
+            readerName.contains("ACM40") || readerName.contains("ACM39") || readerName.contains("ACM38")
         } else {
             return false
         }
