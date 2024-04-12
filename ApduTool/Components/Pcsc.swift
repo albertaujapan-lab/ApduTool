@@ -127,7 +127,7 @@ class Pcsc : NSObject
                 }
                 if apdu.count >= dataOffset + lc {
                     data = Data(Array(apdu[dataOffset..<(dataOffset + lc)]))
-                    if apdu.count > dataOffset + lc {
+                    if apdu.count > dataOffset + lc + (extendedApdu ? 1 : 0) {
                         let leOffset = dataOffset + lc
                         if extendedApdu {
                             le = (Int(apdu[leOffset]) << 8) + Int(apdu[leOffset + 1])
