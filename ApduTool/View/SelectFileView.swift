@@ -64,11 +64,7 @@ struct SelectFileView: View {
         if scriptFile != "" {
             pcsc.scriptFile = pcsc.append(toPath: pcsc.documentDirectory(), withPathComponent: scriptFile) ?? ""
             pcsc.showSelectFile.toggle()
-            guard let fileURL = URL(string: pcsc.scriptFile) else {
-                return
-            }
-            print(fileURL.relativePath)
-            pcsc.scriptFile = fileURL.relativePath
+            print(pcsc.scriptFile)
             if pcsc.scriptFile != "" {
                 pcsc.runScript()
             }
