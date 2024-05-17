@@ -6,9 +6,13 @@
 //
 
 import Foundation
+#if os(iOS)
+import UIKit
+import MobileCoreServices
+#endif
 import CryptoTokenKit
 
-class PcscViewModel: ObservableObject {
+class PcscViewModel: NSObject, ObservableObject {
     enum CardState: String {
         case unknown = "Unknown"
         case missing = "Missing"
@@ -35,14 +39,20 @@ class PcscViewModel: ObservableObject {
     @Published var showToast: Bool = false
     @Published var processing = false
     @Published var showSelectFile: Bool = false
+#if os(macOS)
     var scriptFile: String = ""
+#else
+    var scriptURL: URL? = nil
+    var readWrite: Bool = false
+#endif
     var lines: [String] = []
     var line: Int = 0
     var apdu: Apdu = Apdu()
     var pcsc: Pcsc = Pcsc()
     var script: Script = Script()
     
-    init() {
+    override init() {
+        super.init()
         slotNames = pcsc.getSlotNames()
         pcsc.setUpdateCardSlots(self.updateCardSlots)
     }
@@ -200,7 +210,24 @@ class PcscViewModel: ObservableObject {
         if connected {
             if !processing {
                 processing = true
+#if os(macOS)
                 lines = script.parseFile(atPath: scriptFile)
+#else
+                // Request temporary access to the security-scoped resource
+                guard let accessGranted = scriptURL?.startAccessingSecurityScopedResource() else {
+                    showToast("Invalid file")
+                    processing = false
+                    return
+                }
+                if accessGranted {
+                    lines = script.parseFile(atPath: scriptURL!.relativePath)
+                    scriptURL?.stopAccessingSecurityScopedResource()
+                } else {
+                    showToast("Access is denied")
+                    processing = false
+                    return
+                }
+#endif
                 line = 0
             }
             if lines.count > 0 && line < lines.count - 1 {
@@ -240,8 +267,12 @@ class PcscViewModel: ObservableObject {
         }
     }
     
+    private func getLogPath() -> String? {
+        return append(toPath: documentDirectory(), withPathComponent: "apdulog.txt")
+    }
+    
     func saveLog() -> (result: Bool, error: String?) {
-        guard let filePath = append(toPath: documentDirectory(), withPathComponent: "apdulog.txt") else {
+        guard let filePath = getLogPath() else {
             return (false, "Path not found")
         }
         do {
@@ -263,3 +294,37 @@ class PcscViewModel: ObservableObject {
         }
     }
 }
+
+#if os(iOS)
+extension PcscViewModel : UIDocumentPickerDelegate {
+    public func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        if readWrite {
+            let message = urls.first != nil ? "File saved successfully." : "Error saving file."
+            showToast(message)
+        } else {
+            scriptURL = urls.first
+            runScript()
+        }
+    }
+    
+    func presentDocumentPicker(_ readWrite: Bool) {
+        self.readWrite = readWrite
+        var documentPicker: UIDocumentPickerViewController
+        if readWrite {
+            guard let filePath = getLogPath() else {
+                return
+            }
+            let logFileURL = URL(fileURLWithPath: filePath)
+            documentPicker = UIDocumentPickerViewController(forExporting: [logFileURL], asCopy: true)
+        } else {
+            documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.text])
+        }
+        documentPicker.allowsMultipleSelection = false
+        documentPicker.delegate = self
+        let scenes = UIApplication.shared.connectedScenes
+        let windowScene = scenes.first as? UIWindowScene
+        let window = windowScene?.windows.first
+        window?.rootViewController?.present(documentPicker, animated: true, completion: nil)
+    }
+}
+#endif

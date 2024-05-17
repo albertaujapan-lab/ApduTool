@@ -25,7 +25,9 @@ struct SelectFileView: View {
                     .padding()
                     Spacer()
                     Button() {
+                        #if os(macOS)
                         runScript(selectedFile)
+                        #endif
                     } label: {
                         Text("Open")
                     }
@@ -59,7 +61,7 @@ struct SelectFileView: View {
             .padding()
         }
     }
-    
+    #if os(macOS)
     func runScript(_ scriptFile: String) {
         if scriptFile != "" {
             pcsc.scriptFile = pcsc.append(toPath: pcsc.documentDirectory(), withPathComponent: scriptFile) ?? ""
@@ -70,6 +72,7 @@ struct SelectFileView: View {
             }
         }
     }
+    #endif
 }
 
 #Preview {

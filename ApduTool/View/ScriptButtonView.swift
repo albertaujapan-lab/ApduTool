@@ -13,7 +13,11 @@ struct ScriptButtonView: View {
         HStack(alignment: .center) {
             Button() {
                 if pcsc.connected {
+#if os(macOS)
                     pcsc.showSelectFile.toggle()
+#else
+                    pcsc.presentDocumentPicker(false)
+#endif
                 }
             } label: {
                 Text("Run Script")
@@ -26,7 +30,11 @@ struct ScriptButtonView: View {
                 if pcsc.message != "" {
                     let (result, error) = pcsc.saveLog()
                     if (result) {
+#if os(macOS)
                         message = "File saved successfully."
+#else
+                        pcsc.presentDocumentPicker(true)
+#endif
                     } else {
                         message = "Error saving file: \(error!)"
                     }
