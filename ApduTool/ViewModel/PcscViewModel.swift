@@ -132,7 +132,7 @@ class PcscViewModel: NSObject, ObservableObject {
                 cardInfo = CardInfo()
             }
             if (error != nil) {
-                status = error.debugDescription
+                status = error!.localizedDescription
             }
         }
     }
