@@ -10,7 +10,6 @@ import SwiftUI
 struct LogView: View {
     @Namespace var bottomID
     @EnvironmentObject var pcsc: PcscViewModel
-    @State private var timer: Timer?
     var body: some View {
         VStack {
             GeometryReader { geometry in
@@ -25,17 +24,19 @@ struct LogView: View {
                             .id(bottomID)
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height, alignment: .leading)
-                    .onChange(of: pcsc.processing) { processing in
+                    .onChange(of: pcsc.processing) { _, processing in
                         if processing {
-                            timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { _ in
-                                withAnimation {
-                                    proxy.scrollTo(bottomID)
+                            Task {
+                                while pcsc.processing {
+                                    withAnimation {
+                                        proxy.scrollTo(bottomID)
+                                    }
+                                    do {
+                                        try await Task.sleep(for: .milliseconds(100))
+                                    } catch {
+                                    }
                                 }
-                                if !pcsc.processing {
-                                    timer?.invalidate()
-                                    timer = nil
-                                }
-                            })
+                            }
                         }
                     }
                 }
