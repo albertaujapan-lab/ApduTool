@@ -22,6 +22,7 @@
 		ACA20118298231370066399A /* Pcsc.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA20117298231370066399A /* Pcsc.swift */; };
 		ACA2011B298256860066399A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2011A298256860066399A /* Utils.swift */; };
 		ACA2011E29826DD20066399A /* Apdu.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA2011D29826DD20066399A /* Apdu.swift */; };
+		ACA334F22EA87CB1000D10C1 /* TransmitCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = ACA334F12EA87CAB000D10C1 /* TransmitCommand.m */; };
 		ACB51C482987750800AC0AFB /* StateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACB51C472987750800AC0AFB /* StateView.swift */; };
 		ACD1AE3929909067003EA150 /* EscapeCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = ACD1AE3829909067003EA150 /* EscapeCommand.m */; };
 		ACFD702A2983810700002153 /* ReadersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACFD70292983810700002153 /* ReadersView.swift */; };
@@ -66,6 +67,8 @@
 		ACA20117298231370066399A /* Pcsc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pcsc.swift; sourceTree = "<group>"; };
 		ACA2011A298256860066399A /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		ACA2011D29826DD20066399A /* Apdu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apdu.swift; sourceTree = "<group>"; };
+		ACA334F02EA87C6F000D10C1 /* TransmitCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TransmitCommand.h; sourceTree = "<group>"; };
+		ACA334F12EA87CAB000D10C1 /* TransmitCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TransmitCommand.m; sourceTree = "<group>"; };
 		ACB51C472987750800AC0AFB /* StateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateView.swift; sourceTree = "<group>"; };
 		ACD1AE3629909066003EA150 /* ApduTool-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApduTool-Bridging-Header.h"; sourceTree = "<group>"; };
 		ACD1AE3729909067003EA150 /* EscapeCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EscapeCommand.h; sourceTree = "<group>"; };
@@ -171,6 +174,8 @@
 		ACA20119298256650066399A /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				ACA334F12EA87CAB000D10C1 /* TransmitCommand.m */,
+				ACA334F02EA87C6F000D10C1 /* TransmitCommand.h */,
 				ACD1AE3629909066003EA150 /* ApduTool-Bridging-Header.h */,
 				ACA20117298231370066399A /* Pcsc.swift */,
 				ACA2011A298256860066399A /* Utils.swift */,
@@ -268,7 +273,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					ACA200E729822FEC0066399A = {
 						CreatedOnToolsVersion = 14.2;
@@ -348,6 +353,7 @@
 				ACB51C482987750800AC0AFB /* StateView.swift in Sources */,
 				ACFD702C2983823E00002153 /* TransferApduView.swift in Sources */,
 				AC3567FE2BC37CF800479D16 /* LogView.swift in Sources */,
+				ACA334F22EA87CB1000D10C1 /* TransmitCommand.m in Sources */,
 				ACFD702A2983810700002153 /* ReadersView.swift in Sources */,
 				AC3568022BC389BF00479D16 /* ScriptButtonView.swift in Sources */,
 			);
@@ -442,6 +448,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -496,6 +503,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 			};
@@ -513,9 +521,12 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"ApduTool/Preview Content\"";
 				DEVELOPMENT_TEAM = 4C5LG9ZP6A;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ApduTool/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "Write log file";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "Read script file and export log file";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -531,8 +542,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 2.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduTool;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -557,9 +568,12 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"ApduTool/Preview Content\"";
 				DEVELOPMENT_TEAM = 4C5LG9ZP6A;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ApduTool/Info.plist;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "Write log file";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "Read script file and export log file";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -575,8 +589,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 13.3;
-				MARKETING_VERSION = 2.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.acs.ApduTool;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;

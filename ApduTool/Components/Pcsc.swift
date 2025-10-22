@@ -16,6 +16,9 @@ class Pcsc : NSObject
     private var activeCard: TKSmartCard? = nil
     private var currentSlot: TKSmartCardSlot? = nil
     private var escapeCommand: EscapeCommand = EscapeCommand()
+#if os(macOS)
+    private var transmitCommand: TransmitCommand = TransmitCommand()
+#endif
     var updateCardSlots: ((TKSmartCardSlotManager, NSKeyValueObservedChange<[String]>) -> Void)?
     var getConnectResponse: ((Bool) -> Void)?
     var getCardInfo: ((TKSmartCardSlot.State?, Error?) -> Void)?
@@ -159,6 +162,22 @@ class Pcsc : NSObject
                 return
             }
             if tpduReader {
+#if os(macOS)
+                if let readerName = activeCard?.slot.name {
+                    let semaphore = DispatchSemaphore(value: 0)
+                    DispatchQueue.global(qos: .userInitiated).async { [self] in
+                        activeCard?.endSession()
+                        transmitCommand(readerName: readerName, data: data, getResponse: getResponse)
+                        activeCard?.beginSession(reply: { res, error in
+                            if (error != nil) {
+                                self.activeCard = nil
+                            }
+                            semaphore.signal()
+                        })
+                    }
+                    _ = semaphore.wait(timeout: .now() + 10.0)
+                }
+#else
                 let (cla, ins, p1, p2, sendData, le) = divideAPDU(data.bytes)
                 activeCard?.cla = cla
                 activeCard?.useExtendedLength = true
@@ -173,6 +192,7 @@ class Pcsc : NSObject
                     responseData.append(Data([sw1, sw2]))
                     getResponse?(responseData, error)
                 })
+#endif
             } else {
                 activeCard?.transmit(Data(data), reply: { data, error in
                     getResponse?(data, error)
@@ -203,4 +223,26 @@ class Pcsc : NSObject
         pRecvLength.deallocate()
         szReader.deallocate()
     }
+
+#if os(macOS)
+    public func transmitCommand(readerName: String, data: Data, getResponse: ((Data?, Error?) -> Void)?) {
+        let szReader = (UnsafePointer<CChar>)(strdup(readerName)!)
+        let sendData = (UnsafeMutablePointer<UInt8>)(mutating: NSData(bytes: data.bytes, length: data.count).bytes.assumingMemoryBound(to: UInt8.self))
+        let recvData = UnsafeMutablePointer<UInt8>.allocate(capacity: 65536)
+        let pRecvLength = UnsafeMutablePointer<UInt32>.allocate(capacity: 1)
+        pRecvLength.pointee = 65536
+        let result = transmitCommand.transfer(szReader, andSendData: sendData, andSendLength: (UInt32)(data.count), andRecvData: recvData, andPRecvLength: pRecvLength)
+        if getResponse != nil {
+            var error: Error? = nil
+            let data = Data(buffer: UnsafeMutableBufferPointer(start: recvData, count: (Int)(pRecvLength.pointee)))
+            if result != 0 {
+                error = NSError(domain: "", code: Int(result), userInfo: [NSLocalizedDescriptionKey : "Command transfer failure"])
+            }
+            getResponse?(data, error)
+        }
+        recvData.deallocate()
+        pRecvLength.deallocate()
+        szReader.deallocate()
+    }
+#endif
 }

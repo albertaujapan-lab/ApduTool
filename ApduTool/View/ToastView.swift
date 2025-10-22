@@ -23,6 +23,11 @@ struct ToastView: View {
 }
 
 #Preview {
-    @State var message = "hello"
-    return ToastView(message: $message)
+    struct PreviewWrapper: View {
+        @State var message = "hello"
+        var body: some View {
+            ToastView(message: $message)
+        }
+    }
+    return PreviewWrapper()
 }

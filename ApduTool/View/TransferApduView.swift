@@ -29,9 +29,9 @@ struct TransferApduView: View {
                         .textFieldStyle(.plain)
                         .frame(width: screenWidth * 0.6, height: 28, alignment: .leading)
                         .border(.blue)
-                        .onChange(of: pcsc.sendData, perform: { newValue in
+                        .onChange(of: pcsc.sendData) {_, newValue in
                             pcsc.sendData = newValue.uppercased().filter("0123456789ABCDEF".contains)
-                        })
+                        }
                     Button() {
                         if pcsc.sendData.starts(with: "E0") {
                             pcsc.transferEscapeCommand()
@@ -64,9 +64,9 @@ struct TransferApduView: View {
                         .padding(4)
                         .frame(width: screenWidth * 9 / 10, height: 32, alignment: .leading)
                         .border(.blue)
-                        .onChange(of: pcsc.sendData, perform: { newValue in
+                        .onChange(of: pcsc.sendData) { _, newValue in
                             pcsc.sendData = newValue.uppercased().filter("0123456789ABCDEF".contains)
-                        })
+                        }
                     Button() {
                         if pcsc.sendData.starts(with: "E0") {
                             pcsc.transferEscapeCommand()

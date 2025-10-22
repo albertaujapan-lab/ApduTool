@@ -91,7 +91,7 @@ class PcscViewModel: NSObject, ObservableObject {
             }
             recvData = apdu.recvData.hexString
             if recvData != "" {
-                addMessage(text: "\(recvData)\n")
+                addMessage(text: "> \(recvData)\n")
             }
         }
     }
