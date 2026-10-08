@@ -27,7 +27,7 @@ struct ScriptButtonView: View {
             .padding(.horizontal)
             Button() {
                 var message = "Nothing to save"
-                if pcsc.message != "" {
+                if pcsc.datalog != "" || pcsc.message != "" {
                     let (result, error) = pcsc.saveLog()
                     if (result) {
 #if os(macOS)

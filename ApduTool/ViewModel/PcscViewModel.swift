@@ -40,8 +40,12 @@ class PcscViewModel: NSObject, ObservableObject {
     @Published var processing = false
     @Published var showSelectFile: Bool = false
     @Published var loop: String = "1"
+    @Published var datalog: String = ""
     var currentLoop: Int = 0
     var totalLoops: Int = 1
+    var passCount: Int = 0
+    var failCount: Int = 0
+    var currentLoopFailed: Bool = false
 #if os(macOS)
     var scriptFile: String = ""
 #else
@@ -91,9 +95,12 @@ class PcscViewModel: NSObject, ObservableObject {
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
                 let timeStamp = dateFormatter.string(from: Date())
-                message = message + "\(timeStamp): \(text)\n"
+                let logEntry = "\(timeStamp): \(text)\n"
+                message = message + logEntry
+                datalog = datalog + logEntry
             } else {
                 message = ""
+                datalog = ""
             }
         }
     }
@@ -214,6 +221,9 @@ class PcscViewModel: NSObject, ObservableObject {
     private func getScriptResponse(data: Data?, error: Error?) {
         DispatchQueue.main.async { [self] in
             guard connected else {
+                failCount += 1
+                addMessage(text: "Loop# \(currentLoop + 1) fail")
+                addMessage(text: "Pass: \(passCount) and Fail: \(failCount)")
                 processing = false
                 return
             }
@@ -223,10 +233,16 @@ class PcscViewModel: NSObject, ObservableObject {
             }
             let recvStr = apdu.recvData.hexString
             let exRecvStr = lines[line].trimSpaces.uppercased()
-            if specCompare(exRecvStr, recvStr) {
+            let matched = specCompare(exRecvStr, recvStr) && (error == nil)
+            if matched {
                 addMessage(text: "> \(recvStr)")
             } else {
-                addMessage(text: "> \(recvStr) (Error: expected \(exRecvStr)")
+                currentLoopFailed = true
+                if error != nil {
+                    addMessage(text: "> \(recvStr) (Error: \(error!.localizedDescription))")
+                } else {
+                    addMessage(text: "> \(recvStr) (Error: expected \(exRecvStr))")
+                }
             }
             line += 1
             if line < lines.count - 1 {
@@ -234,13 +250,22 @@ class PcscViewModel: NSObject, ObservableObject {
                     runScript()
                 }
             } else {
+                if currentLoopFailed {
+                    failCount += 1
+                    addMessage(text: "Loop# \(currentLoop + 1) fail")
+                } else {
+                    passCount += 1
+                    addMessage(text: "Loop# \(currentLoop + 1) pass")
+                }
                 currentLoop += 1
                 if currentLoop < totalLoops {
                     line = 0
+                    currentLoopFailed = false
                     DispatchQueue.main.async { [self] in
                         runScript()
                     }
                 } else {
+                    addMessage(text: "Pass: \(passCount) and Fail: \(failCount)")
                     processing = false
                 }
             }
@@ -254,6 +279,10 @@ class PcscViewModel: NSObject, ObservableObject {
                 validateLoopOnEnd()
                 totalLoops = Int(loop) ?? 1
                 currentLoop = 0
+                passCount = 0
+                failCount = 0
+                currentLoopFailed = false
+                addMessage(text: "")
 #if os(macOS)
                 lines = script.parseFile(atPath: scriptFile)
 #else
@@ -275,6 +304,10 @@ class PcscViewModel: NSObject, ObservableObject {
                 line = 0
             }
             if lines.count > 1 && line < lines.count - 1 {
+                if line == 0 {
+                    currentLoopFailed = false
+                    addMessage(text: "Loop# \(currentLoop + 1)/\(totalLoops) starts")
+                }
                 let sendData = lines[line].trimSpaces.uppercased()
                 apdu.sendData = sendData.hexBytes
                 recvData = ""
@@ -322,7 +355,8 @@ class PcscViewModel: NSObject, ObservableObject {
             return (false, "Path not found")
         }
         do {
-            try message.write(toFile: filePath, atomically: true, encoding: .utf8)
+            let logToSave = !datalog.isEmpty ? datalog : message
+            try logToSave.write(toFile: filePath, atomically: true, encoding: .utf8)
         } catch {
             print("Error", error)
             return (false, error.localizedDescription)

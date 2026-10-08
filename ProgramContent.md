@@ -447,9 +447,14 @@ Because iOS apps are strictly sandboxed:
 ### Batch Looping & Automated Stress Testing
 For hardware reliability testing, `PcscViewModel` supports repeating script execution:
 - The UI exposes a validated `Loop#:` field (defaulting to 1; values $\le 0$ automatically reset to 1).
-- When **Run Script** is triggered, `runScript()` parses the batch file once and keeps lines loaded in memory.
-- `getScriptResponse()` tracks the current loop iteration (`currentLoop`); once the script reaches the last command, it resets `line = 0` and restarts the execution until `currentLoop == totalLoops`.
-- All transmitted APDUs (`<`) and responses (`>`) are timestamped into the persistent log buffer, ready for single-tap export using **Save Log**.
+- When **Run Script** is triggered, `runScript()` parses the batch file once, resets tracking counters, and begins execution.
+- **Loop Lifecycle Logging:**
+  - Start of each loop: logs `Loop# m/n starts`.
+  - End of each loop: checks whether all APDU expected responses matched without communication errors and logs `Loop# m pass` or `Loop# n fail`.
+  - Conclusion of test: logs aggregate results `Pass: m and Fail: n`.
+- **Dedicated `datalog` Buffer:**
+  - To prevent truncation from UI text rendering limitations in `LogView`, all APDU transmissions, responses, and loop results are stored into an independent `datalog` string.
+  - When tapping **Save Log**, the full unbounded `datalog` content is written to `apdulog.txt`.
 
 ---
 
