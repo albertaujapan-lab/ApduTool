@@ -465,7 +465,7 @@ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 This tells `xcodebuild` to compile and link everything for syntax, frameworks, and architecture without requiring an active Apple Developer Certificate.
 
 ### Complete GitHub Actions Workflow (`.github/workflows/build.yml`)
-Below is a production-grade workflow configuration file that compiles `ApduTool` for **iOS (Simulator & Device)** and **macOS**:
+Below is a production-grade workflow configuration file that compiles `ApduTool` for **iOS (Simulator & Device)** and **macOS**, packages the **`.ipa`** and macOS `.app`, and uploads them as downloadable artifacts:
 
 ```yaml
 name: Build & Test ApduTool Multiplatform
@@ -519,6 +519,7 @@ jobs:
             -scheme ApduTool \
             -sdk ${{ matrix.platform.sdk }} \
             -destination "${{ matrix.platform.destination }}" \
+            -derivedDataPath build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
@@ -534,10 +535,48 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Package iOS IPA
+        if: matrix.platform.sdk == 'iphoneos'
+        run: |
+          APP_PATH=$(find build/Build/Products -name "ApduTool.app" -type d | head -n 1)
+          echo "Found iOS app at: $APP_PATH"
+          mkdir -p Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r ApduTool.ipa Payload
+
+      - name: Upload iOS IPA Artifact
+        if: matrix.platform.sdk == 'iphoneos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApduTool-iOS-Device-ipa
+          path: ApduTool.ipa
+          retention-days: 7
+
+      - name: Package macOS App
+        if: matrix.platform.sdk == 'macosx'
+        run: |
+          APP_PATH=$(find build/Build/Products -name "ApduTool.app" -type d | head -n 1)
+          echo "Found macOS app at: $APP_PATH"
+          zip -r ApduTool-macOS.zip "$APP_PATH"
+
+      - name: Upload macOS App Artifact
+        if: matrix.platform.sdk == 'macosx'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApduTool-macOS-app
+          path: ApduTool-macOS.zip
+          retention-days: 7
 ```
 
 ### Explanation of Workflow Steps:
 1. **`runs-on: macos-14`**: Uses GitHub's macOS ARM64 runners (M1/M2) which build Swift/SwiftUI projects 3x faster than older Intel runners.
+2. **`-derivedDataPath build`**: Ensures build products land in a deterministic local path (`./build`) instead of random global DerivedData folders.
+3. **Packaging the `.ipa` (`matrix.platform.sdk == 'iphoneos'`):**
+   - By definition, an iOS `.ipa` file is a ZIP archive containing a top-level directory called `Payload/` with the compiled `ApduTool.app` inside.
+   - The workflow creates `Payload/`, copies the built `.app` bundle into it, and zips it into `ApduTool.ipa`.
+4. **Publishing Artifacts (`actions/upload-artifact@v4`):**
+   - Uploads `ApduTool.ipa` (for iOS) and `ApduTool-macOS.zip` (for macOS) directly to the GitHub Actions run summary page under the **Artifacts** section.
 2. **Matrix Strategy**: Spawns 3 parallel jobs:
    - **iOS Simulator:** Verifies iOS SwiftUI compilation and executes XCTests.
    - **iOS Device (`iphoneos`):** Verifies ARM64 device linking and entitlements compatibility.

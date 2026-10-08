@@ -49,6 +49,7 @@ jobs:
             -scheme ApduTool \
             -sdk ${{ matrix.platform.sdk }} \
             -destination "${{ matrix.platform.destination }}" \
+            -derivedDataPath build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
@@ -64,3 +65,35 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Package iOS IPA
+        if: matrix.platform.sdk == 'iphoneos'
+        run: |
+          APP_PATH=$(find build/Build/Products -name "ApduTool.app" -type d | head -n 1)
+          echo "Found iOS app at: $APP_PATH"
+          mkdir -p Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r ApduTool.ipa Payload
+
+      - name: Upload iOS IPA Artifact
+        if: matrix.platform.sdk == 'iphoneos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApduTool-iOS-Device-ipa
+          path: ApduTool.ipa
+          retention-days: 7
+
+      - name: Package macOS App
+        if: matrix.platform.sdk == 'macosx'
+        run: |
+          APP_PATH=$(find build/Build/Products -name "ApduTool.app" -type d | head -n 1)
+          echo "Found macOS app at: $APP_PATH"
+          zip -r ApduTool-macOS.zip "$APP_PATH"
+
+      - name: Upload macOS App Artifact
+        if: matrix.platform.sdk == 'macosx'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ApduTool-macOS-app
+          path: ApduTool-macOS.zip
+          retention-days: 7
