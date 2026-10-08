@@ -2,9 +2,9 @@ name: Build & Test ApduTool Multiplatform
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, loop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, loop ]
   workflow_dispatch:
 
 concurrency:
