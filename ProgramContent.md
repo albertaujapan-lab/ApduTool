@@ -635,6 +635,27 @@ jobs:
 - `0x80100022` is `SCARD_E_UNSUPPORTED_FEATURE`.
 - As discussed in [Section 3](#the-ios-reality-cryptotokenkit--sandboxing), Apple's `CryptoTokenKit` on iOS does not support raw Escape Commands (`SCardControl`). These commands only work on macOS.
 
+#### Q4: "Why does my test script report `> 9000 (Error: expected 61XX)` on iPhone when selecting a file/AID?"
+- **Symptom:** You run an automated test script containing a `SELECT FILE` command expecting `61 XX`:
+  ```text
+  00 A4 04 00 0E 31 50 41 59 2E 53 59 53 2E 44 44 46 30 33
+  61 17
+  ```
+  The app logs:
+  ```text
+  < 00A404000E315041592E5359532E4444463033
+  > 9000 (Error: expected 6117)
+  ```
+- **Root Cause:**
+  - On desktop PC/SC (e.g. `winscard` / `SCardTransmit`), when a smart card using the **T=0** protocol executes a command that has response data (such as File Control Information / FCI for `SELECT FILE`), the card cannot return data directly on a Case 3 command. It returns the status word **`61 XX`** (where `XX` is the number of available response bytes). Desktop PC/SC simply passes `61 XX` back to the calling application.
+  - On iOS with TPDU readers (ACR38, ACR39, ACR40), `ApduTool` transmits via Apple's high-level `TKSmartCard.send(...)` API in `Pcsc.swift`.
+  - Apple's `TKSmartCard.send` adheres to the full ISO 7816-4 APDU layer: when it detects `SW1 == 0x61`, **it automatically sends `GET RESPONSE (00 C0 00 00 XX)` under the hood** to fetch the remaining data from the card.
+  - When the underlying `GET RESPONSE` finishes, the smart card completes the exchange with status word **`90 00`**.
+  - As a result, `TKSmartCard.send` returns `9000` to `ApduTool` rather than intermediate `61 XX` procedure bytes.
+- **Resolution:**
+  - In scripts written for `ApduTool` on iOS, expect **`90 00`** instead of `61 XX` for commands where `CryptoTokenKit` automatically executes `GET RESPONSE`.
+  - The card command succeeded completely—the target AID/file was selected and the card is ready for subsequent APDU commands.
+
 ---
 
 ### Smart Card Status Word (SW1 SW2) Cheat Sheet
@@ -643,7 +664,7 @@ When transmitting APDUs, the card always returns two hex status bytes at the end
 | Status Word | Name | Meaning & What to Do |
 | :--- | :--- | :--- |
 | `90 00` | **Success** | Command completed normally. |
-| `61 XX` | **Response Bytes Available** | Normal in `T=0`. The card has `XX` bytes waiting. Send `00 C0 00 00 XX` (GET RESPONSE). |
+| `61 XX` | **Response Bytes Available** | Normal in `T=0`. The card has `XX` bytes waiting. Send `00 C0 00 00 XX` (GET RESPONSE). *Note: On iOS, `TKSmartCard.send()` issues `GET RESPONSE` automatically under the hood and returns `90 00`.* |
 | `6C XX` | **Wrong Le length** | The card says: *"Re-issue the exact same command, but set Le = XX"*. |
 | `67 00` | **Wrong Length** | `Lc` or `Le` is invalid for this instruction. |
 | `69 82` | **Security Condition Not Satisfied** | Authentication required (e.g. PIN must be verified first). |
