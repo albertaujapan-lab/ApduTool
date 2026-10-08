@@ -285,14 +285,17 @@ class PcscViewModel: NSObject, ObservableObject {
             }
             let recvStr = apdu.recvData.hexString
             let exRecvStr = lines[line].trimSpaces.uppercased()
-            let matched = specCompare(exRecvStr, recvStr) && (error == nil)
+            let matched = !recvStr.isEmpty && specCompare(exRecvStr, recvStr)
             if matched {
+                status = ""
                 addMessage(text: "> \(recvStr)")
             } else {
                 currentLoopFailed = true
                 if error != nil {
+                    status = error!.localizedDescription
                     addMessage(text: "> \(recvStr) (Error: \(error!.localizedDescription))")
                 } else {
+                    status = "Expected \(exRecvStr)"
                     addMessage(text: "> \(recvStr) (Error: expected \(exRecvStr))")
                 }
             }

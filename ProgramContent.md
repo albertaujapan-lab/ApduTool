@@ -444,6 +444,11 @@ private func specCompare(_ expStr: String, _ cmpStr: String) -> Bool {
 - `*`: Matches any subsequent data (e.g. `77*` checks that response starts with tag `77`).
 - `XX`: Masks out a specific variable byte (e.g. `9F3602XXXX9000` ignores the 2-byte Application Transaction Counter).
 
+### Status Word Matching & Negative Testing (e.g. `6C 04`, `6A 82`)
+In smart card testing, scripts frequently test negative cases or protocol handshakes expecting non-`9000` status words (such as `6C 04` indicating wrong Le, or `6A 82` indicating file not found):
+- Apple's `CryptoTokenKit` framework flags any status word other than `9000` as an `NSError` (`"SmartCard returned error 6c04"`), even though the card completed execution and returned the exact status bytes.
+- `ApduTool` evaluates test success by matching the actual output against the script's expected response: as long as the received data matches the expected output (`specCompare`), the step passes. Error messages are only flagged if the card output does not match expectation.
+
 ### File Management: Document Picker & Sandbox Security
 Because iOS apps are strictly sandboxed:
 - The app uses `UIDocumentPickerViewController` (`presentDocumentPicker()`) to let the user pick a script file from iCloud Drive, local Files, or AirDrop.
