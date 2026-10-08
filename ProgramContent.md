@@ -404,6 +404,17 @@ Each command has two lines:
 1. **Send line:** The hex APDU to transmit.
 2. **Expect line:** The expected response hex string.
 
+### Smart Card Reset Directive (`[RST]`)
+Scripts can also instruct the reader to power-reset the card on the fly:
+- When a line contains `[RST]`, `PcscViewModel` executes `resetCard()`.
+- **Card Reset Flow (`resetCard()`):**
+  1. Disconnects and ends the active card session (`card.endSession()`).
+  2. Re-connects to the card slot (`slot.makeSmartCard()` and `beginSession`).
+  3. Obtains the newly returned Answer-To-Reset (ATR) bytes.
+  4. Logs `"ATR:"` followed by the ATR hex buffer into `LogView` and `datalog`.
+  5. If an error occurs, logs `"Error: " + error.localizedDescription` and flags the loop step as failed.
+- **Optional Expected ATR:** If the line directly following `[RST]` begins with `3B`, `3F`, or `*`, it is validated against the card's ATR; otherwise, the script immediately advances to the next APDU command.
+
 ### Wildcard Response Matching (`*` and `XX`)
 In real smart card testing, card responses often contain dynamic data (such as card serial numbers, session keys, or random cryptographic nonces). You cannot always do an exact string match.
 

@@ -110,6 +110,44 @@ class Pcsc : NSObject
         }
     }
 
+    public func resetCard(completion: @escaping (Result<[UInt8], Error>) -> Void) {
+        guard let slot = currentSlot else {
+            let SCARD_E_NO_SMARTCARD = 0x8010000C
+            let error = NSError(domain: "", code: SCARD_E_NO_SMARTCARD, userInfo: [NSLocalizedDescriptionKey : "No active Card connection"])
+            completion(.failure(error))
+            return
+        }
+        
+        // 1. Disconnect and end existing card session
+        if let card = activeCard {
+            card.endSession()
+            activeCard = nil
+        }
+        
+        // 2. Re-connect to the card
+        guard let newCard = slot.makeSmartCard() else {
+            let SCARD_E_NO_SMARTCARD = 0x8010000C
+            let error = NSError(domain: "", code: SCARD_E_NO_SMARTCARD, userInfo: [NSLocalizedDescriptionKey : "Failed to connect to card"])
+            completion(.failure(error))
+            return
+        }
+        
+        newCard.beginSession { [weak self] res, error in
+            guard let self = self else { return }
+            if let error = error {
+                self.activeCard = nil
+                completion(.failure(error))
+                return
+            }
+            self.activeCard = newCard
+            self.tpduReader = self.isTPDUReader()
+            
+            // 3. Obtain the new ATR bytes
+            let atrBytes: [UInt8] = slot.atr?.bytes.bytes ?? []
+            completion(.success(atrBytes))
+        }
+    }
+
     private func divideAPDU(_ apdu: [UInt8]) -> (cla: UInt8, ins: UInt8, p1: UInt8, p2: UInt8, data: Data?, le: Int?) {
         // Extract INS, CLA, P1, P2, and LE from APDU
         let cla = apdu[0]

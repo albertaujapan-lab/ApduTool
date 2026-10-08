@@ -199,6 +199,31 @@ class PcscViewModel: NSObject, ObservableObject {
         processing = false
     }
     
+    func resetCard(completion: ((Bool) -> Void)? = nil) {
+        pcsc.resetCard { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                switch result {
+                case .success(let atr):
+                    self.cardInfo.atr = atr.hexString
+                    self.cardInfo.currentProtocol = self.getProtocolString(self.pcsc.getCurrentProtocol())
+                    self.addMessage(text: "ATR:")
+                    if !atr.isEmpty {
+                        self.addMessage(text: atr.hexString)
+                    } else {
+                        self.addMessage(text: "(empty)")
+                    }
+                    completion?(true)
+                case .failure(let error):
+                    self.currentLoopFailed = true
+                    self.status = error.localizedDescription
+                    self.addMessage(text: "Error: " + error.localizedDescription)
+                    completion?(false)
+                }
+            }
+        }
+    }
+    
     private func specCompare(_ expStr: String, _ cmpStr: String) -> Bool {
         if expStr.subString(0, 1) == "*" {
             return true
@@ -216,6 +241,33 @@ class PcscViewModel: NSObject, ObservableObject {
             }
         }
         return true
+    }
+    
+    private func finishStepAndContinue() {
+        if line < lines.count {
+            DispatchQueue.main.async { [self] in
+                runScript()
+            }
+        } else {
+            if currentLoopFailed {
+                failCount += 1
+                addMessage(text: "Loop# \(currentLoop + 1) fail")
+            } else {
+                passCount += 1
+                addMessage(text: "Loop# \(currentLoop + 1) pass")
+            }
+            currentLoop += 1
+            if currentLoop < totalLoops {
+                line = 0
+                currentLoopFailed = false
+                DispatchQueue.main.async { [self] in
+                    runScript()
+                }
+            } else {
+                addMessage(text: "Pass: \(passCount) and Fail: \(failCount)")
+                processing = false
+            }
+        }
     }
     
     private func getScriptResponse(data: Data?, error: Error?) {
@@ -245,30 +297,7 @@ class PcscViewModel: NSObject, ObservableObject {
                 }
             }
             line += 1
-            if line < lines.count - 1 {
-                DispatchQueue.main.async { [self] in
-                    runScript()
-                }
-            } else {
-                if currentLoopFailed {
-                    failCount += 1
-                    addMessage(text: "Loop# \(currentLoop + 1) fail")
-                } else {
-                    passCount += 1
-                    addMessage(text: "Loop# \(currentLoop + 1) pass")
-                }
-                currentLoop += 1
-                if currentLoop < totalLoops {
-                    line = 0
-                    currentLoopFailed = false
-                    DispatchQueue.main.async { [self] in
-                        runScript()
-                    }
-                } else {
-                    addMessage(text: "Pass: \(passCount) and Fail: \(failCount)")
-                    processing = false
-                }
-            }
+            finishStepAndContinue()
         }
     }
     
@@ -303,20 +332,68 @@ class PcscViewModel: NSObject, ObservableObject {
 #endif
                 line = 0
             }
-            if lines.count > 1 && line < lines.count - 1 {
-                if line == 0 {
-                    currentLoopFailed = false
-                    addMessage(text: "Loop# \(currentLoop + 1)/\(totalLoops) starts")
+            guard lines.count > 0 && line < lines.count else {
+                processing = false
+                return
+            }
+            if line == 0 {
+                currentLoopFailed = false
+                addMessage(text: "Loop# \(currentLoop + 1)/\(totalLoops) starts")
+            }
+            
+            let currentLine = lines[line].trimSpaces
+            if currentLine.uppercased().contains("[RST]") {
+                addMessage(text: "< [RST]")
+                line += 1
+                var expectedAtr: String? = nil
+                if line < lines.count {
+                    let nextCandidate = lines[line].trimSpaces.uppercased()
+                    if nextCandidate.starts(with: "3B") || nextCandidate.starts(with: "3F") || nextCandidate == "*" {
+                        expectedAtr = nextCandidate
+                        line += 1
+                    }
                 }
-                let sendData = lines[line].trimSpaces.uppercased()
+                resetCard { [weak self] success in
+                    guard let self = self else { return }
+                    if let expected = expectedAtr {
+                        let actualAtr = self.cardInfo.atr.trimSpaces.uppercased()
+                        if !self.specCompare(expected, actualAtr) {
+                            self.currentLoopFailed = true
+                            self.addMessage(text: "> Error: expected ATR \(expected)")
+                        }
+                    }
+                    self.finishStepAndContinue()
+                }
+                return
+            }
+            
+            if line < lines.count - 1 {
+                let sendData = currentLine.uppercased()
                 apdu.sendData = sendData.hexBytes
                 recvData = ""
                 status = ""
                 addMessage(text: "< \(sendData)")
                 line += 1
                 pcsc.transferApdu(data: Data(apdu.sendData), getResponse: getScriptResponse)
-            } else if lines.count <= 1 {
-                processing = false
+            } else {
+                let sendData = currentLine.uppercased()
+                apdu.sendData = sendData.hexBytes
+                recvData = ""
+                status = ""
+                addMessage(text: "< \(sendData)")
+                line += 1
+                pcsc.transferApdu(data: Data(apdu.sendData)) { [weak self] data, error in
+                    guard let self = self else { return }
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            self.currentLoopFailed = true
+                            self.addMessage(text: "> Error: \(error.localizedDescription)")
+                        } else if let data = data {
+                            self.addMessage(text: "> \(data.bytes.hexString)")
+                        }
+                        self.finishStepAndContinue()
+                    }
+                }
             }
         }
     }

@@ -16,9 +16,9 @@ class Script {
             
             for line in lines {
                 let trimmedLine = line.trimmingCharacters(in: .whitespacesAndNewlines)
-                
-                if !trimmedLine.isEmpty && !trimmedLine.starts(with: ";") {
-                    parsedLines.append(trimmedLine)
+                let cleanLine = trimmedLine.components(separatedBy: ";").first?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                if !cleanLine.isEmpty {
+                    parsedLines.append(cleanLine)
                 }
             }
             
