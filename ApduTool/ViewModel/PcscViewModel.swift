@@ -39,6 +39,9 @@ class PcscViewModel: NSObject, ObservableObject {
     @Published var showToast: Bool = false
     @Published var processing = false
     @Published var showSelectFile: Bool = false
+    @Published var loop: String = "1"
+    var currentLoop: Int = 0
+    var totalLoops: Int = 1
 #if os(macOS)
     var scriptFile: String = ""
 #else
@@ -55,6 +58,31 @@ class PcscViewModel: NSObject, ObservableObject {
         super.init()
         slotNames = pcsc.getSlotNames()
         pcsc.setUpdateCardSlots(self.updateCardSlots)
+    }
+    
+    func validateLoopInput(_ newValue: String) {
+        let filtered = newValue.filter { "-0123456789".contains($0) }
+        if let val = Int(filtered) {
+            if val <= 0 {
+                loop = "1"
+            } else if filtered != newValue {
+                loop = filtered
+            }
+        } else if filtered.isEmpty || filtered == "-" {
+            if filtered != newValue {
+                loop = filtered
+            }
+        } else {
+            loop = "1"
+        }
+    }
+    
+    func validateLoopOnEnd() {
+        if let val = Int(loop), val > 0 {
+            loop = String(val)
+        } else {
+            loop = "1"
+        }
     }
     
     func addMessage(text: String) {
@@ -161,6 +189,7 @@ class PcscViewModel: NSObject, ObservableObject {
         pcsc.stopSlotMonitor()
         connected = false
         cardInfo = CardInfo()
+        processing = false
     }
     
     private func specCompare(_ expStr: String, _ cmpStr: String) -> Bool {
@@ -184,6 +213,10 @@ class PcscViewModel: NSObject, ObservableObject {
     
     private func getScriptResponse(data: Data?, error: Error?) {
         DispatchQueue.main.async { [self] in
+            guard connected else {
+                processing = false
+                return
+            }
             apdu.recvData = data?.bytes ?? []
             if (error != nil) {
                 status = error.debugDescription
@@ -201,7 +234,15 @@ class PcscViewModel: NSObject, ObservableObject {
                     runScript()
                 }
             } else {
-                processing = false
+                currentLoop += 1
+                if currentLoop < totalLoops {
+                    line = 0
+                    DispatchQueue.main.async { [self] in
+                        runScript()
+                    }
+                } else {
+                    processing = false
+                }
             }
         }
     }
@@ -210,6 +251,9 @@ class PcscViewModel: NSObject, ObservableObject {
         if connected {
             if !processing {
                 processing = true
+                validateLoopOnEnd()
+                totalLoops = Int(loop) ?? 1
+                currentLoop = 0
 #if os(macOS)
                 lines = script.parseFile(atPath: scriptFile)
 #else
@@ -230,7 +274,7 @@ class PcscViewModel: NSObject, ObservableObject {
 #endif
                 line = 0
             }
-            if lines.count > 0 && line < lines.count - 1 {
+            if lines.count > 1 && line < lines.count - 1 {
                 let sendData = lines[line].trimSpaces.uppercased()
                 apdu.sendData = sendData.hexBytes
                 recvData = ""
@@ -238,6 +282,8 @@ class PcscViewModel: NSObject, ObservableObject {
                 addMessage(text: "< \(sendData)")
                 line += 1
                 pcsc.transferApdu(data: Data(apdu.sendData), getResponse: getScriptResponse)
+            } else if lines.count <= 1 {
+                processing = false
             }
         }
     }

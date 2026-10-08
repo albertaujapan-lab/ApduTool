@@ -368,6 +368,7 @@ The UI is cleanly divided into modular, previewable SwiftUI views:
 - **`TransferApduView.swift`:**
   - Auto-formats input: `newValue.uppercased().filter("0123456789ABCDEF".contains)`.
   - Smart command routing: If the input starts with `"E0"`, it routes to `transferEscapeCommand()`; otherwise, it routes to `transferApdu()`.
+  - Loop configuration: Adds `Loop#:` with automated validation (defaults to `1`, automatically resets `0` or negative values to `1`) to control batch script repetition.
 - **`StateView.swift`:** Displays card status (Present, Removed, Probing), ATR hex string, and active protocol (T0, T1).
 - **`LogView.swift`:** Scrollable terminal log with auto-scroll using `ScrollViewReader` and `proxy.scrollTo(bottomID)`.
 - **`ToastView.swift`:** Animated floating feedback pill for user alerts.
@@ -442,6 +443,13 @@ Because iOS apps are strictly sandboxed:
   scriptURL?.stopAccessingSecurityScopedResource()
   ```
 - In `Info.plist`, `UIFileSharingEnabled = true` enables sharing logs directly through the iOS Files app or macOS Finder when tethered via cable.
+
+### Batch Looping & Automated Stress Testing
+For hardware reliability testing, `PcscViewModel` supports repeating script execution:
+- The UI exposes a validated `Loop#:` field (defaulting to 1; values $\le 0$ automatically reset to 1).
+- When **Run Script** is triggered, `runScript()` parses the batch file once and keeps lines loaded in memory.
+- `getScriptResponse()` tracks the current loop iteration (`currentLoop`); once the script reaches the last command, it resets `line = 0` and restarts the execution until `currentLoop == totalLoops`.
+- All transmitted APDUs (`<`) and responses (`>`) are timestamped into the persistent log buffer, ready for single-tap export using **Save Log**.
 
 ---
 

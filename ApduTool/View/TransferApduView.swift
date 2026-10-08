@@ -52,6 +52,24 @@ struct TransferApduView: View {
                         .border(.blue)
                     Spacer()
                 }
+                HStack {
+                    Text("Loop#:").frame(width: screenWidth * 0.15, alignment: .trailing)
+                    TextField("", text: $pcsc.loop)
+                        .labelsHidden()
+                        .textFieldStyle(.plain)
+                        .frame(width: screenWidth * 0.6, height: 28, alignment: .leading)
+                        .border(.blue)
+#if !os(macOS)
+                        .keyboardType(.numbersAndPunctuation)
+#endif
+                        .onChange(of: pcsc.loop) { _, newValue in
+                            pcsc.validateLoopInput(newValue)
+                        }
+                        .onSubmit {
+                            pcsc.validateLoopOnEnd()
+                        }
+                    Spacer()
+                }
             } else {
                 VStack {
                     Text("Send APDU:")
@@ -85,6 +103,25 @@ struct TransferApduView: View {
                         .padding(4)
                         .frame(width: screenWidth * 9 / 10, height: 32, alignment: .leading)
                         .border(.blue)
+                    Text("Loop#:")
+                        .frame(width: screenWidth * 9 / 10, alignment: .leading)
+                    TextField("", text: $pcsc.loop)
+                        .labelsHidden()
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 20))
+                        .monospaced()
+                        .padding(4)
+                        .frame(width: screenWidth * 9 / 10, height: 32, alignment: .leading)
+                        .border(.blue)
+#if !os(macOS)
+                        .keyboardType(.numbersAndPunctuation)
+#endif
+                        .onChange(of: pcsc.loop) { _, newValue in
+                            pcsc.validateLoopInput(newValue)
+                        }
+                        .onSubmit {
+                            pcsc.validateLoopOnEnd()
+                        }
                 }
             }
         }
