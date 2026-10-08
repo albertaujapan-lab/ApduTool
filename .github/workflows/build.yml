@@ -1,0 +1,66 @@
+name: Build & Test ApduTool Multiplatform
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-verify:
+    name: Build (${{ matrix.platform.name }})
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: "iOS Simulator"
+            destination: "generic/platform=iOS Simulator"
+            sdk: "iphonesimulator"
+            run_tests: true
+          - name: "iOS Device (iphoneos)"
+            destination: "generic/platform=iOS"
+            sdk: "iphoneos"
+            run_tests: false
+          - name: "macOS"
+            destination: "generic/platform=macOS"
+            sdk: "macosx"
+            run_tests: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Build Target (${{ matrix.platform.name }})
+        run: |
+          set -o pipefail
+          xcodebuild clean build \
+            -project ApduTool.xcodeproj \
+            -scheme ApduTool \
+            -sdk ${{ matrix.platform.sdk }} \
+            -destination "${{ matrix.platform.destination }}" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run Unit Tests (${{ matrix.platform.name }})
+        if: ${{ matrix.platform.run_tests }}
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project ApduTool.xcodeproj \
+            -scheme ApduTool \
+            -destination "${{ matrix.platform.destination }}" \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
