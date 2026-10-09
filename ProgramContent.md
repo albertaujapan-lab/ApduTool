@@ -409,10 +409,11 @@ Scripts can also instruct the reader to power-reset the card on the fly:
 - When a line contains `[RST]`, `PcscViewModel` executes `resetCard()`.
 - **Card Reset Flow (`resetCard()`):**
   1. Disconnects and ends the active card session (`card.endSession()`).
-  2. Re-connects to the card slot (`slot.makeSmartCard()` and `beginSession`).
-  3. Obtains the newly returned Answer-To-Reset (ATR) bytes.
-  4. Logs `"ATR:"` followed by the ATR hex buffer into `LogView` and `datalog`.
-  5. If an error occurs, logs `"Error: " + error.localizedDescription` and flags the loop step as failed.
+  2. Re-connects to the card slot (`slot.makeSmartCard()`) and sets `newCard.isSensitive = true` to trigger an ISO 7816-3 **Warm Reset** (toggling RST line while maintaining VCC power) upon starting the session (`beginSession`).
+  3. Resets `newCard.isSensitive = false` for subsequent normal APDU transmissions and updates active card tracking.
+  4. Obtains the returned Answer-To-Reset (ATR) bytes (`slot.atr`).
+  5. Logs `"ATR:"` followed by the ATR hex buffer into `LogView` and `datalog`.
+  6. If an error occurs, logs `"Error: " + error.localizedDescription` and flags the loop step as failed.
 - **Optional Expected ATR:** If the line directly following `[RST]` begins with `3B`, `3F`, or `*`, it is validated against the card's ATR; otherwise, the script immediately advances to the next APDU command.
 
 ### Wildcard Response Matching (`*` and `XX`)

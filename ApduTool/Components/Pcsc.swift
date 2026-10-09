@@ -124,13 +124,17 @@ class Pcsc : NSObject
             activeCard = nil
         }
         
-        // 2. Re-connect to the card
+        // 2. Re-connect to the card with Warm Reset
         guard let newCard = slot.makeSmartCard() else {
             let SCARD_E_NO_SMARTCARD = 0x8010000C
             let error = NSError(domain: "", code: SCARD_E_NO_SMARTCARD, userInfo: [NSLocalizedDescriptionKey : "Failed to connect to card"])
             completion(.failure(error))
             return
         }
+        
+        // Setting isSensitive = true instructs CryptoTokenKit to execute a Warm Reset
+        // (toggling the RST line while maintaining VCC) before starting the session.
+        newCard.isSensitive = true
         
         newCard.beginSession { [weak self] res, error in
             guard let self = self else { return }
@@ -139,6 +143,8 @@ class Pcsc : NSObject
                 completion(.failure(error))
                 return
             }
+            // Reset isSensitive back to false so subsequent APDU transmissions do not re-trigger resets
+            newCard.isSensitive = false
             self.activeCard = newCard
             self.tpduReader = self.isTPDUReader()
             
