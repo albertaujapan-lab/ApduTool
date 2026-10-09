@@ -260,7 +260,7 @@ class PcscViewModel: NSObject, ObservableObject {
         }
     }
     
-    private func specCompare(_ expStr: String, _ cmpStr: String) -> Bool {
+    func specCompare(_ expStr: String, _ cmpStr: String) -> Bool {
         if expStr.subString(0, 1) == "*" {
             return true
         }

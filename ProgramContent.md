@@ -483,10 +483,11 @@ private func specCompare(_ expStr: String, _ cmpStr: String) -> Bool {
 - `*`: Matches any subsequent data (e.g. `77*` checks that response starts with tag `77`).
 - `XX`: Masks out a specific variable byte (e.g. `9F3602XXXX9000` ignores the 2-byte Application Transaction Counter).
 
-### Status Word Matching & Negative Testing (e.g. `6C 04`, `6A 82`)
-In smart card testing, scripts frequently test negative cases or protocol handshakes expecting non-`9000` status words (such as `6C 04` indicating wrong Le, or `6A 82` indicating file not found):
-- Apple's `CryptoTokenKit` framework flags any status word other than `9000` as an `NSError` (`"SmartCard returned error 6c04"`), even though the card completed execution and returned the exact status bytes.
-- `ApduTool` evaluates test success by matching the actual output against the script's expected response: as long as the received data matches the expected output (`specCompare`), the step passes. Error messages are only flagged if the card output does not match expectation.
+### Status Word Matching & Negative Testing (e.g. `90 XX`, `6C 04`, `6A 82`)
+In smart card testing, scripts frequently test negative cases, proprietary status words, or protocol handshakes expecting non-`9000` status words (such as `90 XX` matching `90 20`, `6C 04` indicating wrong Le, or `6A 82` indicating file not found):
+- **Apple `CryptoTokenKit` Error Semantics:** Apple's `TKSmartCard` flags any status word other than `0x9000` as an `NSError` (`"SmartCard returned error XXXX"`), even though the card completed execution and returned the exact status word bytes.
+- **Auto ISO-7816 Status Word Preservation:** In `Pcsc.swift`, `executeIsoApdu` and `handleIsoResponse` distinguish between fatal transport/communication errors (`sw == 0 && error != nil`) and card status words (`sw != 0`). When a card returns a non-`9000` status word (e.g., `0x9020`), the engine appends the 2-byte status word to the response data buffer and forwards it to `getScriptResponse`.
+- **Wildcard & Spec Verification:** `ApduTool` evaluates test success by matching the actual output against the script's expected response: as long as the received data matches the expected output (`specCompare`), the step passes. For example, if the script expects `90 XX` and the card returns `90 20`, the step passes cleanly without error logs in both Auto ISO and Raw modes. Error messages are only flagged if the card output does not match expectation or if a fatal transport disconnection occurs.
 
 ### File Management: Document Picker & Sandbox Security
 Because iOS apps are strictly sandboxed:

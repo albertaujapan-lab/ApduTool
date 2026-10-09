@@ -417,7 +417,7 @@ class Pcsc : NSObject
             
             executeChainedCommands(chunks: chunks, index: 0) { [weak self] finalReply, finalSW, error in
                 guard let self = self else { return }
-                if let error = error {
+                if finalSW == 0 && error != nil {
                     getResponse(nil, error)
                     return
                 }
@@ -426,6 +426,7 @@ class Pcsc : NSObject
                     sw: finalSW,
                     originalCommand: chunks.last ?? command,
                     iteration: 0,
+                    lastError: error,
                     completion: getResponse
                 )
             }
@@ -449,7 +450,7 @@ class Pcsc : NSObject
             le: command.le
         ) { [weak self] replyData, sw, error in
             guard let self = self else { return }
-            if let error = error {
+            if sw == 0 && error != nil {
                 getResponse(nil, error)
                 return
             }
@@ -458,6 +459,7 @@ class Pcsc : NSObject
                 sw: sw,
                 originalCommand: command,
                 iteration: 0,
+                lastError: error,
                 completion: getResponse
             )
         }
@@ -507,7 +509,7 @@ class Pcsc : NSObject
             le: chunk.le
         ) { [weak self] replyData, sw, error in
             guard let self = self else { return }
-            if let error = error {
+            if sw == 0 && error != nil {
                 var failData = accumulated
                 if let data = replyData { failData.append(data) }
                 failData.append(UInt8(sw >> 8 & 0xFF))
@@ -524,7 +526,7 @@ class Pcsc : NSObject
                 let bytesToFetch = (sw2 == 0) ? 256 : Int(sw2)
                 self.sendSingleAPDU(cla: 0x00, ins: 0xC0, p1: 0x00, p2: 0x00, data: nil, le: bytesToFetch) { [weak self] grData, grSW, grErr in
                     guard let self = self else { return }
-                    if let grErr = grErr {
+                    if grSW == 0 && grErr != nil {
                         var failData = accumulated
                         failData.append(sw1)
                         failData.append(sw2)
@@ -538,7 +540,7 @@ class Pcsc : NSObject
                     } else {
                         nextAccum.append(UInt8(grSW >> 8 & 0xFF))
                         nextAccum.append(UInt8(grSW & 0xFF))
-                        completion(nextAccum, nil)
+                        completion(nextAccum, (grSW == 0x9000 ? nil : grErr))
                     }
                 }
                 return
@@ -556,7 +558,7 @@ class Pcsc : NSObject
                     le: reLe
                 ) { [weak self] reReply, reSW, reErr in
                     guard let self = self else { return }
-                    if let reErr = reErr {
+                    if reSW == 0 && reErr != nil {
                         var failData = accumulated
                         failData.append(UInt8(reSW >> 8 & 0xFF))
                         failData.append(UInt8(reSW & 0xFF))
@@ -570,7 +572,7 @@ class Pcsc : NSObject
                     } else {
                         nextAccum.append(UInt8(reSW >> 8 & 0xFF))
                         nextAccum.append(UInt8(reSW & 0xFF))
-                        completion(nextAccum, nil)
+                        completion(nextAccum, (reSW == 0x9000 ? nil : reErr))
                     }
                 }
                 return
@@ -600,7 +602,7 @@ class Pcsc : NSObject
             } else {
                 nextAccum.append(sw1)
                 nextAccum.append(sw2)
-                completion(nextAccum, nil)
+                completion(nextAccum, (sw == 0x9000 ? nil : error))
             }
         }
     }
@@ -632,7 +634,7 @@ class Pcsc : NSObject
             le: chunk.le
         ) { [weak self] replyData, sw, error in
             guard let self = self else { return }
-            if let error = error {
+            if sw == 0 && error != nil {
                 completion(nil, sw, error)
                 return
             }
@@ -653,7 +655,7 @@ class Pcsc : NSObject
                 }
                 self.executeChainedCommands(chunks: chunks, index: index + 1, completion: completion)
             } else {
-                completion(replyData, sw, nil)
+                completion(replyData, sw, (sw == 0x9000 ? nil : error))
             }
         }
     }
@@ -663,6 +665,7 @@ class Pcsc : NSObject
         sw: UInt16,
         originalCommand: ApduCommand,
         iteration: Int,
+        lastError: Error? = nil,
         completion: @escaping (Data?, Error?) -> Void
     ) {
         var accumulated = initialReply
@@ -673,7 +676,7 @@ class Pcsc : NSObject
         if iteration > 100 {
             accumulated.append(sw1)
             accumulated.append(sw2)
-            completion(accumulated, nil)
+            completion(accumulated, (sw == 0x9000 ? nil : lastError))
             return
         }
         
@@ -684,7 +687,7 @@ class Pcsc : NSObject
             
             sendSingleAPDU(cla: 0x00, ins: 0xC0, p1: 0x00, p2: 0x00, data: nil, le: bytesToFetch) { [weak self] replyData, nextSW, error in
                 guard let self = self else { return }
-                if let error = error {
+                if nextSW == 0 && error != nil {
                     accumulated.append(sw1)
                     accumulated.append(sw2)
                     completion(accumulated, error)
@@ -698,6 +701,7 @@ class Pcsc : NSObject
                     sw: nextSW,
                     originalCommand: originalCommand,
                     iteration: iteration + 1,
+                    lastError: error,
                     completion: completion
                 )
             }
@@ -718,8 +722,14 @@ class Pcsc : NSObject
                 le: correctLe
             ) { [weak self] reReply, reSW, error in
                 guard let self = self else { return }
-                if let error = error {
-                    completion(nil, error)
+                if reSW == 0 && error != nil {
+                    var failData = accumulated
+                    if let data = reReply {
+                        failData.append(data)
+                    }
+                    failData.append(UInt8(reSW >> 8 & 0xFF))
+                    failData.append(UInt8(reSW & 0xFF))
+                    completion(failData, error)
                     return
                 }
                 self.handleIsoResponse(
@@ -727,6 +737,7 @@ class Pcsc : NSObject
                     sw: reSW,
                     originalCommand: originalCommand,
                     iteration: iteration + 1,
+                    lastError: error,
                     completion: completion
                 )
             }
@@ -736,7 +747,7 @@ class Pcsc : NSObject
         // 3. Normal / Final status word
         accumulated.append(sw1)
         accumulated.append(sw2)
-        completion(accumulated, nil)
+        completion(accumulated, (sw == 0x9000 ? nil : lastError))
     }
 
     public func transferApdu(data: Data, autoIsoHandling: Bool? = nil, getResponse: ((Data?, Error?) -> Void)?) {

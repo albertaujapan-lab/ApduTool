@@ -373,4 +373,42 @@ final class ApduToolTests: XCTestCase {
         XCTAssertTrue(vm.message.isEmpty)
         XCTAssertTrue(vm.datalog.isEmpty)
     }
+
+    // MARK: - Script Expected Response specCompare Tests
+
+    func testSpecCompareWildcardXX() throws {
+        let vm = PcscViewModel()
+        // User case: expected "90XX" with received "9020" must pass
+        XCTAssertTrue(vm.specCompare("90XX", "9020"))
+        XCTAssertTrue(vm.specCompare("90XX", "9000"))
+        XCTAssertTrue(vm.specCompare("90XX", "90FF"))
+        XCTAssertFalse(vm.specCompare("90XX", "6A82"))
+        XCTAssertFalse(vm.specCompare("90XX", "6105"))
+        XCTAssertFalse(vm.specCompare("90XX", "6C10"))
+
+        // Multi-byte wildcard
+        XCTAssertTrue(vm.specCompare("9F3602XXXX9000", "9F360212349000"))
+        XCTAssertTrue(vm.specCompare("9F3602XXXX9000", "9F3602ABCD9000"))
+        XCTAssertFalse(vm.specCompare("9F3602XXXX9000", "9F360212346A82"))
+    }
+
+    func testSpecCompareAsteriskAndExact() throws {
+        let vm = PcscViewModel()
+        // Leading asterisk matches anything
+        XCTAssertTrue(vm.specCompare("*", "9000"))
+        XCTAssertTrue(vm.specCompare("*", "6A82"))
+
+        // Trailing asterisk matches prefix
+        XCTAssertTrue(vm.specCompare("77*", "770E82020000940808010100000000009000"))
+        XCTAssertTrue(vm.specCompare("90*", "9000"))
+        XCTAssertTrue(vm.specCompare("90*", "9020"))
+        XCTAssertFalse(vm.specCompare("77*", "6A82"))
+
+        // Exact match
+        XCTAssertTrue(vm.specCompare("9000", "9000"))
+        XCTAssertFalse(vm.specCompare("9000", "9020"))
+
+        // Length mismatch: expected string longer than cmpStr must fail
+        XCTAssertFalse(vm.specCompare("900000", "9000"))
+    }
 }
