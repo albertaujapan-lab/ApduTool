@@ -507,9 +507,15 @@ For hardware reliability testing, `PcscViewModel` supports repeating script exec
   - Start of each loop: logs `Loop# m/n starts`.
   - End of each loop: checks whether all APDU expected responses matched without communication errors and logs `Loop# m pass` or `Loop# n fail`.
   - Conclusion of test: logs aggregate results `Pass: m and Fail: n`.
-- **Dedicated `datalog` Buffer:**
-  - To prevent truncation from UI text rendering limitations in `LogView`, all APDU transmissions, responses, and loop results are stored into an independent `datalog` string.
+- **Rolling UI Display Buffer (`maxDisplayLines = 1000`):**
+  - To prevent SwiftUI text rendering and scrolling slowdowns during extended multi-loop stress testing, `LogView` display (`message`) is capped at the latest **1000 lines** via a FIFO rolling window.
+  - As new log entries arrive past 1000 lines, older lines automatically roll off the top of the display view, keeping rendering speeds consistently high across all loop iterations.
+- **Dedicated Unbounded `datalog` Buffer:**
+  - Unlike the rolling UI view, `datalog` stores the complete, unabridged history of all APDU commands, responses, and loop results from loop #1 to the final loop.
   - When tapping **Save Log**, the full unbounded `datalog` content is written to `apdulog.txt`.
+- **UI Scroll Performance Optimizations:**
+  - Removed continuous animation interpolation (`withAnimation`) from the 100ms scroll timer in `LogView`, eliminating frame backlog and stutter.
+  - Reused a static `DateFormatter` and optimized string append operations in `PcscViewModel` to eliminate $O(N)$ string copying overhead per APDU.
 
 ---
 

@@ -330,4 +330,46 @@ final class ApduToolTests: XCTestCase {
         XCTAssertEqual(raw[6], 0x2C) // Lc low = 300
         XCTAssertEqual(raw.count, 4 + 3 + 300 + 2) // Header 4 + Ext Lc 3 + Data 300 + Ext Le 2
     }
+
+    // MARK: - Log Rolling & Datalog Preservation Tests
+
+    func testLogDisplayLineLimitingTo1000Lines() throws {
+        let vm = PcscViewModel()
+        vm.appendMessage(text: "") // Reset log state
+        XCTAssertEqual(vm.message, "")
+        XCTAssertEqual(vm.datalog, "")
+
+        // Append 1200 log messages
+        for i in 1...1200 {
+            vm.appendMessage(text: "Test line \(i)")
+        }
+
+        // Verify that message is capped at exactly 1000 lines
+        let messageLines = vm.message.components(separatedBy: "\n").filter { !$0.isEmpty }
+        XCTAssertEqual(messageLines.count, 1000)
+
+        // Verify message contains only the LATEST lines (201 through 1200)
+        XCTAssertTrue(messageLines.first?.contains("Test line 201") == true)
+        XCTAssertTrue(messageLines.last?.contains("Test line 1200") == true)
+        XCTAssertFalse(vm.message.contains("Test line 1\n"))
+        XCTAssertFalse(vm.message.contains("Test line 200\n"))
+
+        // Verify that datalog preserves ALL 1200 lines across the entire run
+        let datalogLines = vm.datalog.components(separatedBy: "\n").filter { !$0.isEmpty }
+        XCTAssertEqual(datalogLines.count, 1200)
+        XCTAssertTrue(datalogLines.first?.contains("Test line 1") == true)
+        XCTAssertTrue(datalogLines.last?.contains("Test line 1200") == true)
+    }
+
+    func testLogResetClearsBothDisplayAndDatalog() throws {
+        let vm = PcscViewModel()
+        vm.appendMessage(text: "Sample log entry")
+        XCTAssertFalse(vm.message.isEmpty)
+        XCTAssertFalse(vm.datalog.isEmpty)
+
+        // Reset with empty text
+        vm.appendMessage(text: "")
+        XCTAssertTrue(vm.message.isEmpty)
+        XCTAssertTrue(vm.datalog.isEmpty)
+    }
 }

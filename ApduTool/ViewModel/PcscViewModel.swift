@@ -98,19 +98,44 @@ class PcscViewModel: NSObject, ObservableObject {
         }
     }
     
+    private var displayLines: [String] = []
+    public let maxDisplayLines: Int = 1000
+
+    private static let logDateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+        return df
+    }()
+
     func addMessage(text: String) {
-        DispatchQueue.main.async { [self] in
-            if text != "" {
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
-                let timeStamp = dateFormatter.string(from: Date())
-                let logEntry = "\(timeStamp): \(text)\n"
-                message = message + logEntry
-                datalog = datalog + logEntry
-            } else {
-                message = ""
-                datalog = ""
+        if Thread.isMainThread {
+            appendMessage(text: text)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.appendMessage(text: text)
             }
+        }
+    }
+
+    func appendMessage(text: String) {
+        if !text.isEmpty {
+            let timeStamp = PcscViewModel.logDateFormatter.string(from: Date())
+            let cleanText = text.hasSuffix("\n") ? String(text.dropLast()) : text
+            let logEntry = "\(timeStamp): \(cleanText)\n"
+            
+            // 1. datalog maintains the complete history of all loops for saving
+            datalog.append(logEntry)
+            
+            // 2. message only maintains the latest maxDisplayLines (1000 lines) for UI display performance
+            displayLines.append(logEntry)
+            if displayLines.count > maxDisplayLines {
+                displayLines.removeFirst(displayLines.count - maxDisplayLines)
+            }
+            message = displayLines.joined()
+        } else {
+            displayLines.removeAll()
+            message = ""
+            datalog = ""
         }
     }
     

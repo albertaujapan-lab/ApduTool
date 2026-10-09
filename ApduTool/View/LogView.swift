@@ -28,15 +28,19 @@ struct LogView: View {
                         if processing {
                             Task {
                                 while pcsc.processing {
-                                    withAnimation {
-                                        proxy.scrollTo(bottomID)
-                                    }
+                                    proxy.scrollTo(bottomID)
                                     do {
                                         try await Task.sleep(for: .milliseconds(100))
                                     } catch {
                                     }
                                 }
+                                proxy.scrollTo(bottomID)
                             }
+                        }
+                    }
+                    .onChange(of: pcsc.message) { _, _ in
+                        if !pcsc.processing {
+                            proxy.scrollTo(bottomID)
                         }
                     }
                 }
