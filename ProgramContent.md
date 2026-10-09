@@ -332,10 +332,11 @@ Raw APDU Byte Array:
 
 The algorithm checks:
 1. **Case 1 (Length == 4):** CLA, INS, P1, P2 only.
-2. **Short APDU vs. Extended APDU:**
+2. **Case 2S (Length == 5):** Short APDU with expected return length (`Le = apdu[4] == 0 ? 256 : apdu[4]`). No command data.
+3. **Payload / Extended APDU (Length > 5):**
    - If `apdu[4] != 0`: It's a standard Short APDU (`Lc = apdu[4]`). Data starts at index 5.
-   - If `apdu[4] == 0`: It's an Extended APDU! The length is encoded in the next two bytes (`(apdu[5] << 8) + apdu[6]`). Data starts at index 7.
-3. **Determines `Le` (Expected return length):**
+   - If `apdu[4] == 0` and length >= 7: It's an Extended APDU! The length is encoded in the next two bytes (`(apdu[5] << 8) + apdu[6]`). Data starts at index 7.
+4. **Determines `Le` (Expected return length):**
    - If remaining bytes exist after the payload (`dataOffset + lc`), those remaining bytes represent `Le`!
 
 Finally, after receiving the response from `activeCard.send(...)`, it reconstitutes the full response APDU by re-attaching the 2-byte status word (`sw1`, `sw2`):

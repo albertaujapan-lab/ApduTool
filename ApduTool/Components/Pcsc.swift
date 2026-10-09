@@ -165,9 +165,17 @@ class Pcsc : NSObject
         var le: Int?
         var extendedApdu: Bool = false
 
-        if apdu.count > 4 {
+        // Case 2S: Exactly 5 bytes (Header + short Le)
+        if apdu.count == 5 {
+            let leByte = apdu[4]
+            // In ISO 7816, Le = 0x00 means 256 bytes (or pass 256 / 0 to TKSmartCard)
+            le = leByte == 0 ? 256 : Int(leByte)
+            return (cla, ins, p1, p2, nil, le)
+        }
+
+        if apdu.count > 5 {
             lc = Int(apdu[4])
-            extendedApdu = lc == 0
+            extendedApdu = (lc == 0 && apdu.count >= 7)
             let dataOffset = extendedApdu ? 7 : 5
             if apdu.count > dataOffset {
                 if extendedApdu {
