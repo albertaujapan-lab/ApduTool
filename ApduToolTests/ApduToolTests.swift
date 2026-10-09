@@ -151,15 +151,19 @@ final class ApduToolTests: XCTestCase {
 
         XCTAssertEqual(chunks.count, 2)
 
-        // Chunk 1: intermediate command, CLA bit 5 set (0x00 | 0x10 = 0x10)
+        // Chunk 1: intermediate command, CLA bit 5 set (0x00 | 0x10 = 0x10), offset 0
         XCTAssertEqual(chunks[0].cla, 0x10)
         XCTAssertEqual(chunks[0].ins, 0xD6)
+        XCTAssertEqual(chunks[0].p1, 0x00)
+        XCTAssertEqual(chunks[0].p2, 0x00)
         XCTAssertEqual(chunks[0].data?.count, 254)
         XCTAssertNil(chunks[0].le)
 
-        // Chunk 2: final command, CLA bit 5 cleared (0x00 & ~0x10 = 0x00)
+        // Chunk 2: final command, CLA bit 5 cleared (0x00 & ~0x10 = 0x00), offset 254 (0x00FE)
         XCTAssertEqual(chunks[1].cla, 0x00)
         XCTAssertEqual(chunks[1].ins, 0xD6)
+        XCTAssertEqual(chunks[1].p1, 0x00)
+        XCTAssertEqual(chunks[1].p2, 0xFE)
         XCTAssertEqual(chunks[1].data?.count, 1)
         XCTAssertNil(chunks[1].le)
     }
@@ -171,36 +175,141 @@ final class ApduToolTests: XCTestCase {
 
         XCTAssertEqual(chunks.count, 2)
 
-        // Chunk 1
+        // Chunk 1: offset 0
         XCTAssertEqual(chunks[0].cla, 0x10)
+        XCTAssertEqual(chunks[0].p1, 0x00)
+        XCTAssertEqual(chunks[0].p2, 0x00)
         XCTAssertEqual(chunks[0].data?.count, 254)
-        XCTAssertNil(chunks[0].le) // Intermediate blocks do not have Le
+        XCTAssertNil(chunks[0].le)
 
-        // Chunk 2 (Final)
+        // Chunk 2 (Final): offset 254 (0x00FE)
         XCTAssertEqual(chunks[1].cla, 0x00)
+        XCTAssertEqual(chunks[1].p1, 0x00)
+        XCTAssertEqual(chunks[1].p2, 0xFE)
         XCTAssertEqual(chunks[1].data?.count, 246)
-        XCTAssertEqual(chunks[1].le, 256) // Final block carries original Le
+        XCTAssertEqual(chunks[1].le, 256)
     }
 
     func testCommandChainingSplit800BytesMultiBlock() throws {
         // 800 bytes splits into 4 chunks (254, 254, 254, 38)
+        // For non-binary command (0xE2), P1-P2 are preserved as-is
         let data = Data(repeating: 0xEE, count: 800)
         let chunks = Pcsc.splitForCommandChaining(cla: 0x80, ins: 0xE2, p1: 0x00, p2: 0x00, data: data, originalLe: nil, chunkSize: 254)
 
         XCTAssertEqual(chunks.count, 4)
         // 0x80 | 0x10 = 0x90
         XCTAssertEqual(chunks[0].cla, 0x90)
+        XCTAssertEqual(chunks[0].p1, 0x00)
+        XCTAssertEqual(chunks[0].p2, 0x00)
         XCTAssertEqual(chunks[0].data?.count, 254)
 
         XCTAssertEqual(chunks[1].cla, 0x90)
+        XCTAssertEqual(chunks[1].p1, 0x00)
+        XCTAssertEqual(chunks[1].p2, 0x00)
         XCTAssertEqual(chunks[1].data?.count, 254)
 
         XCTAssertEqual(chunks[2].cla, 0x90)
+        XCTAssertEqual(chunks[2].p1, 0x00)
+        XCTAssertEqual(chunks[2].p2, 0x00)
         XCTAssertEqual(chunks[2].data?.count, 254)
 
         // Final chunk: 0x80 & ~0x10 = 0x80
         XCTAssertEqual(chunks[3].cla, 0x80)
+        XCTAssertEqual(chunks[3].p1, 0x00)
+        XCTAssertEqual(chunks[3].p2, 0x00)
         XCTAssertEqual(chunks[3].data?.count, 38)
+    }
+
+    func testCommandChaining4096BytesUpdateBinaryOffsets() throws {
+        // 4096 bytes for UPDATE BINARY (0xD6) at offset 0
+        // Splits into 17 chunks (16 * 254 = 4064 + 32)
+        let data = Data(repeating: 0x42, count: 4096)
+        let chunks = Pcsc.splitForCommandChaining(cla: 0x00, ins: 0xD6, p1: 0x00, p2: 0x00, data: data, originalLe: nil, chunkSize: 254)
+
+        XCTAssertEqual(chunks.count, 17)
+
+        // Chunk 0: offset 0 (0x0000)
+        XCTAssertEqual(chunks[0].cla, 0x10)
+        XCTAssertEqual(chunks[0].p1, 0x00)
+        XCTAssertEqual(chunks[0].p2, 0x00)
+        XCTAssertEqual(chunks[0].data?.count, 254)
+
+        // Chunk 1: offset 254 (0x00FE)
+        XCTAssertEqual(chunks[1].cla, 0x10)
+        XCTAssertEqual(chunks[1].p1, 0x00)
+        XCTAssertEqual(chunks[1].p2, 0xFE)
+        XCTAssertEqual(chunks[1].data?.count, 254)
+
+        // Chunk 2: offset 508 (0x01FC)
+        XCTAssertEqual(chunks[2].cla, 0x10)
+        XCTAssertEqual(chunks[2].p1, 0x01)
+        XCTAssertEqual(chunks[2].p2, 0xFC)
+        XCTAssertEqual(chunks[2].data?.count, 254)
+
+        // Chunk 15: offset 3810 (0x0EE2)
+        XCTAssertEqual(chunks[15].cla, 0x10)
+        XCTAssertEqual(chunks[15].p1, 0x0E)
+        XCTAssertEqual(chunks[15].p2, 0xE2)
+        XCTAssertEqual(chunks[15].data?.count, 254)
+
+        // Chunk 16 (Final): offset 4064 (0x0FE0), length 32
+        XCTAssertEqual(chunks[16].cla, 0x00)
+        XCTAssertEqual(chunks[16].p1, 0x0F)
+        XCTAssertEqual(chunks[16].p2, 0xE0)
+        XCTAssertEqual(chunks[16].data?.count, 32)
+    }
+
+    // MARK: - Segmented READ BINARY Tests
+
+    func testSegmentedReadBinary4096Bytes() throws {
+        // READ BINARY (0xB0) requesting 4096 bytes at offset 0
+        // Splits into 16 chunks of 256 bytes
+        let chunks = Pcsc.splitForSegmentedReadBinary(cla: 0x00, ins: 0xB0, p1: 0x00, p2: 0x00, totalLe: 4096, chunkSize: 256)
+
+        XCTAssertEqual(chunks.count, 16)
+
+        // Chunk 0: offset 0 (0x0000), Le 256
+        XCTAssertEqual(chunks[0].cla, 0x00)
+        XCTAssertEqual(chunks[0].ins, 0xB0)
+        XCTAssertEqual(chunks[0].p1, 0x00)
+        XCTAssertEqual(chunks[0].p2, 0x00)
+        XCTAssertEqual(chunks[0].le, 256)
+        XCTAssertEqual(chunks[0].rawBytes, [0x00, 0xB0, 0x00, 0x00, 0x00])
+
+        // Chunk 1: offset 256 (0x0100), Le 256
+        XCTAssertEqual(chunks[1].cla, 0x00)
+        XCTAssertEqual(chunks[1].ins, 0xB0)
+        XCTAssertEqual(chunks[1].p1, 0x01)
+        XCTAssertEqual(chunks[1].p2, 0x00)
+        XCTAssertEqual(chunks[1].le, 256)
+        XCTAssertEqual(chunks[1].rawBytes, [0x00, 0xB0, 0x01, 0x00, 0x00])
+
+        // Chunk 15: offset 3840 (0x0F00), Le 256
+        XCTAssertEqual(chunks[15].cla, 0x00)
+        XCTAssertEqual(chunks[15].ins, 0xB0)
+        XCTAssertEqual(chunks[15].p1, 0x0F)
+        XCTAssertEqual(chunks[15].p2, 0x00)
+        XCTAssertEqual(chunks[15].le, 256)
+        XCTAssertEqual(chunks[15].rawBytes, [0x00, 0xB0, 0x0F, 0x00, 0x00])
+    }
+
+    func testSegmentedReadBinary300Bytes() throws {
+        // READ BINARY requesting 300 bytes (256 + 44)
+        let chunks = Pcsc.splitForSegmentedReadBinary(cla: 0x00, ins: 0xB0, p1: 0x00, p2: 0x00, totalLe: 300, chunkSize: 256)
+
+        XCTAssertEqual(chunks.count, 2)
+
+        // Chunk 0: 256 bytes at offset 0
+        XCTAssertEqual(chunks[0].p1, 0x00)
+        XCTAssertEqual(chunks[0].p2, 0x00)
+        XCTAssertEqual(chunks[0].le, 256)
+        XCTAssertEqual(chunks[0].rawBytes, [0x00, 0xB0, 0x00, 0x00, 0x00])
+
+        // Chunk 1: 44 bytes at offset 256 (0x0100)
+        XCTAssertEqual(chunks[1].p1, 0x01)
+        XCTAssertEqual(chunks[1].p2, 0x00)
+        XCTAssertEqual(chunks[1].le, 44)
+        XCTAssertEqual(chunks[1].rawBytes, [0x00, 0xB0, 0x01, 0x00, 0x2C])
     }
 
     // MARK: - ApduCommand Raw Serialization Tests

@@ -245,6 +245,11 @@ class Pcsc : NSObject
             return [ApduCommand(cla: cla, ins: ins, p1: p1, p2: p2, data: data, le: originalLe)]
         }
         
+        // For transparent binary update/write commands, P1-P2 encodes the file offset
+        let isBinaryUpdate = (ins == 0xD6 || ins == 0xD7 || ins == 0xD0 || ins == 0xD1)
+        let isSfi = (p1 & 0x80) != 0
+        let baseOffset = isSfi ? Int(p2) : ((Int(p1) << 8) | Int(p2))
+
         var commands: [ApduCommand] = []
         let totalCount = data.count
         var offset = 0
@@ -259,10 +264,67 @@ class Pcsc : NSObject
             let chunkCla = isLast ? (cla & ~0x10) : (cla | 0x10)
             let chunkLe = isLast ? originalLe : nil
             
-            commands.append(ApduCommand(cla: chunkCla, ins: ins, p1: p1, p2: p2, data: chunkData, le: chunkLe, isExtended: false))
+            var chunkP1 = p1
+            var chunkP2 = p2
+            if isBinaryUpdate {
+                let currentOffset = baseOffset + offset
+                if !isSfi {
+                    chunkP1 = UInt8((currentOffset >> 8) & 0xFF)
+                    chunkP2 = UInt8(currentOffset & 0xFF)
+                } else {
+                    chunkP1 = p1
+                    chunkP2 = UInt8(currentOffset & 0xFF)
+                }
+            }
+            
+            commands.append(ApduCommand(cla: chunkCla, ins: ins, p1: chunkP1, p2: chunkP2, data: chunkData, le: chunkLe, isExtended: false))
             offset += thisChunkSize
         }
         
+        return commands
+    }
+
+    public static func splitForSegmentedReadBinary(
+        cla: UInt8, ins: UInt8, p1: UInt8, p2: UInt8,
+        totalLe: Int,
+        chunkSize: Int = 256
+    ) -> [ApduCommand] {
+        guard totalLe > 0 else { return [] }
+        let safeChunkSize = max(1, min(chunkSize, 256))
+        let isSfi = (p1 & 0x80) != 0
+        let baseOffset = isSfi ? Int(p2) : ((Int(p1) << 8) | Int(p2))
+        
+        var commands: [ApduCommand] = []
+        var bytesRead = 0
+        
+        while bytesRead < totalLe {
+            let remaining = totalLe - bytesRead
+            let thisChunkLe = min(remaining, safeChunkSize)
+            let currentOffset = baseOffset + bytesRead
+            
+            let chunkP1: UInt8
+            let chunkP2: UInt8
+            if !isSfi {
+                chunkP1 = UInt8((currentOffset >> 8) & 0xFF)
+                chunkP2 = UInt8(currentOffset & 0xFF)
+            } else {
+                chunkP1 = p1
+                chunkP2 = UInt8(currentOffset & 0xFF)
+            }
+            
+            commands.append(
+                ApduCommand(
+                    cla: cla,
+                    ins: ins,
+                    p1: chunkP1,
+                    p2: chunkP2,
+                    data: nil,
+                    le: thisChunkLe,
+                    isExtended: false
+                )
+            )
+            bytesRead += thisChunkLe
+        }
         return commands
     }
 
@@ -341,7 +403,7 @@ class Pcsc : NSObject
     ) {
         let dataPayload = command.data ?? Data()
         
-        // If data payload exceeds standard block size (254 bytes), perform ISO 7816-4 command chaining
+        // 1. If data payload exceeds standard block size (254 bytes), perform ISO 7816-4 command chaining
         if dataPayload.count > 254 {
             let chunks = Pcsc.splitForCommandChaining(
                 cla: command.cla,
@@ -367,27 +429,178 @@ class Pcsc : NSObject
                     completion: getResponse
                 )
             }
-        } else {
-            sendSingleAPDU(
-                cla: command.cla,
-                ins: command.ins,
-                p1: command.p1,
-                p2: command.p2,
-                data: command.data,
-                le: command.le
-            ) { [weak self] replyData, sw, error in
-                guard let self = self else { return }
-                if let error = error {
-                    getResponse(nil, error)
+            return
+        }
+        
+        // 2. If READ BINARY requests Le > 256 bytes, perform automated segmented reading
+        let isBinaryRead = (command.ins == 0xB0 || command.ins == 0xB1) && (command.data == nil || command.data!.isEmpty)
+        if isBinaryRead, let requestedLe = command.le, requestedLe > 256 {
+            executeSegmentedReadBinary(command: command, totalLe: requestedLe, chunkSize: 256, completion: getResponse)
+            return
+        }
+        
+        // 3. Otherwise, send single APDU and handle 61 XX / 6C XX procedure responses
+        sendSingleAPDU(
+            cla: command.cla,
+            ins: command.ins,
+            p1: command.p1,
+            p2: command.p2,
+            data: command.data,
+            le: command.le
+        ) { [weak self] replyData, sw, error in
+            guard let self = self else { return }
+            if let error = error {
+                getResponse(nil, error)
+                return
+            }
+            self.handleIsoResponse(
+                initialReply: replyData ?? Data(),
+                sw: sw,
+                originalCommand: command,
+                iteration: 0,
+                completion: getResponse
+            )
+        }
+    }
+
+    private func executeSegmentedReadBinary(
+        command: ApduCommand,
+        totalLe: Int,
+        chunkSize: Int = 256,
+        completion: @escaping (Data?, Error?) -> Void
+    ) {
+        let chunks = Pcsc.splitForSegmentedReadBinary(
+            cla: command.cla,
+            ins: command.ins,
+            p1: command.p1,
+            p2: command.p2,
+            totalLe: totalLe,
+            chunkSize: chunkSize
+        )
+        executeReadBinaryChunks(chunks: chunks, index: 0, accumulated: Data(), completion: completion)
+    }
+
+    private func executeReadBinaryChunks(
+        chunks: [ApduCommand],
+        index: Int,
+        accumulated: Data,
+        completion: @escaping (Data?, Error?) -> Void
+    ) {
+        guard index < chunks.count else {
+            var finalData = accumulated
+            finalData.append(0x90)
+            finalData.append(0x00)
+            completion(finalData, nil)
+            return
+        }
+        
+        let chunk = chunks[index]
+        let rawHex = chunk.rawBytes.hexString
+        onLogMessage?("[Read \(index + 1)/\(chunks.count)] \(rawHex)")
+        
+        sendSingleAPDU(
+            cla: chunk.cla,
+            ins: chunk.ins,
+            p1: chunk.p1,
+            p2: chunk.p2,
+            data: chunk.data,
+            le: chunk.le
+        ) { [weak self] replyData, sw, error in
+            guard let self = self else { return }
+            if let error = error {
+                var failData = accumulated
+                if let data = replyData { failData.append(data) }
+                failData.append(UInt8(sw >> 8 & 0xFF))
+                failData.append(UInt8(sw & 0xFF))
+                completion(failData, error)
+                return
+            }
+            
+            let sw1 = UInt8(sw >> 8 & 0xFF)
+            let sw2 = UInt8(sw & 0xFF)
+            
+            // 1. T=0 Procedure: Response bytes available (61 XX)
+            if sw1 == 0x61 {
+                let bytesToFetch = (sw2 == 0) ? 256 : Int(sw2)
+                self.sendSingleAPDU(cla: 0x00, ins: 0xC0, p1: 0x00, p2: 0x00, data: nil, le: bytesToFetch) { [weak self] grData, grSW, grErr in
+                    guard let self = self else { return }
+                    if let grErr = grErr {
+                        var failData = accumulated
+                        failData.append(sw1)
+                        failData.append(sw2)
+                        completion(failData, grErr)
+                        return
+                    }
+                    var nextAccum = accumulated
+                    if let data = grData { nextAccum.append(data) }
+                    if grSW == 0x9000 {
+                        self.executeReadBinaryChunks(chunks: chunks, index: index + 1, accumulated: nextAccum, completion: completion)
+                    } else {
+                        nextAccum.append(UInt8(grSW >> 8 & 0xFF))
+                        nextAccum.append(UInt8(grSW & 0xFF))
+                        completion(nextAccum, nil)
+                    }
+                }
+                return
+            }
+            
+            // 2. Wrong Le length (6C XX)
+            if sw1 == 0x6C {
+                let reLe = (sw2 == 0) ? 256 : Int(sw2)
+                self.sendSingleAPDU(
+                    cla: chunk.cla,
+                    ins: chunk.ins,
+                    p1: chunk.p1,
+                    p2: chunk.p2,
+                    data: chunk.data,
+                    le: reLe
+                ) { [weak self] reReply, reSW, reErr in
+                    guard let self = self else { return }
+                    if let reErr = reErr {
+                        var failData = accumulated
+                        failData.append(UInt8(reSW >> 8 & 0xFF))
+                        failData.append(UInt8(reSW & 0xFF))
+                        completion(failData, reErr)
+                        return
+                    }
+                    var nextAccum = accumulated
+                    if let data = reReply { nextAccum.append(data) }
+                    if reSW == 0x9000 {
+                        self.executeReadBinaryChunks(chunks: chunks, index: index + 1, accumulated: nextAccum, completion: completion)
+                    } else {
+                        nextAccum.append(UInt8(reSW >> 8 & 0xFF))
+                        nextAccum.append(UInt8(reSW & 0xFF))
+                        completion(nextAccum, nil)
+                    }
+                }
+                return
+            }
+            
+            var nextAccum = accumulated
+            if let data = replyData { nextAccum.append(data) }
+            
+            // 3. Normal success
+            if sw == 0x9000 {
+                let expectedChunkLen = chunk.le ?? 256
+                if let data = replyData, data.count < expectedChunkLen {
+                    // Reached end of file early
+                    var finalData = nextAccum
+                    finalData.append(0x90)
+                    finalData.append(0x00)
+                    completion(finalData, nil)
                     return
                 }
-                self.handleIsoResponse(
-                    initialReply: replyData ?? Data(),
-                    sw: sw,
-                    originalCommand: command,
-                    iteration: 0,
-                    completion: getResponse
-                )
+                self.executeReadBinaryChunks(chunks: chunks, index: index + 1, accumulated: nextAccum, completion: completion)
+            } else if sw == 0x6282 {
+                // End of file reached
+                var finalData = nextAccum
+                finalData.append(0x90)
+                finalData.append(0x00)
+                completion(finalData, nil)
+            } else {
+                nextAccum.append(sw1)
+                nextAccum.append(sw2)
+                completion(nextAccum, nil)
             }
         }
     }

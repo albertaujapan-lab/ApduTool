@@ -348,26 +348,40 @@ A common challenge in smart card engineering is transmitting or retrieving paylo
 - **ISO 7816-3 T=1:** The Information Field length ($IFSC / IFSD$) negotiated per $I$-block is typically at most **254 bytes**.
 - **ISO 7816-4 Short APDU:** Maximum $Lc = 255$ bytes, maximum $Le = 256$ bytes ($0x00$).
 
-#### 2. Writing Data > 254 Bytes (ISO 7816-4 Command Chaining)
+#### 2. Writing Data > 254 Bytes (ISO 7816-4 Command Chaining & Offset Tracking)
 When `autoIsoHandling` is enabled and the payload exceeds 254 bytes, `Pcsc.swift` utilizes `Pcsc.splitForCommandChaining(...)`:
-1. Slices the data into safe blocks of $\le 254$ bytes.
+1. Slices the data into safe blocks of $\le 254$ bytes (or up to 255 bytes).
 2. **Intermediate blocks ($0 \dots N-2$):** Sets **Bit 5 of the CLA byte** (`CLA |= 0x10`), signaling *"not the last command of a chain"*.
 3. **Final block ($N-1$):** Clears Bit 5 of CLA (`CLA &= ~0x10`), signaling *"last command of a chain"*, and attaches the original $Le$.
-4. Logs each intermediate block step: `[Chain 1/N] ...` in the datalog.
-5. Verifies each intermediate block receives status `90 00` before sending the subsequent block.
+4. **Transparent File Offset Incrementing (`P1-P2`):**
+   - For binary write/update commands (`UPDATE BINARY` `0xD6`/`0xD7` or `WRITE BINARY` `0xD0`/`0xD1`), `P1-P2` represents the target byte offset in the transparent Elementary File (EF).
+   - The engine automatically calculates `currentOffset = baseOffset + offset` and updates `chunkP1` and `chunkP2` for each block.
+   - This ensures consecutive chunks are written contiguously across the file rather than repeatedly overwriting offset `00 00`.
+   - For non-binary commands (e.g. `PUT DATA`, crypto operations), `P1-P2` qualifiers are strictly preserved.
+5. Logs each intermediate block step: `[Chain 1/N] ...` in the datalog.
+6. Verifies each intermediate block receives status `90 00` before transmitting the subsequent block.
 
-#### 3. Reading Data > 254 Bytes (Looped `GET RESPONSE` on T=0)
-Under T=0:
-1. When a command produces response data, the card returns **`61 XX`** ($XX$ indicates available bytes; $0x00$ means $\ge 256$ bytes).
-2. `Pcsc.swift` automatically intercepts `61 XX` and issues `GET RESPONSE (00 C0 00 00 XX)`.
-3. If the card still has more bytes and returns another `61 YY`, the engine continues issuing `GET RESPONSE`, accumulating the returned data chunks until the final status word (`90 00`) is returned.
-4. Re-assembles the accumulated data buffer and appends the final status word transparently.
+#### 3. Reading Data > 254 / 256 Bytes
+`ApduTool` supports two complementary ISO 7816 reading mechanisms:
+
+##### A. Segmented `READ BINARY` (`INS == 0xB0` or `0xB1`)
+- When a `READ BINARY` command specifies an expected return length $Le > 256$ bytes (e.g. `00 B0 00 00 00 10 00` requesting 4096 bytes):
+- In standard short APDU environments (and strictly on T=0), the card cannot deliver $> 256$ bytes in a single APDU.
+- `Pcsc.swift` automatically slices the request via `Pcsc.splitForSegmentedReadBinary(...)` into standard chunks of up to 256 bytes ($Le = 0x00$).
+- Increments the `P1-P2` byte offset contiguously for each subsequent block.
+- Logs each retrieval block in the datalog: `[Read 1/N] ...`.
+- Transparently accumulates the returned data buffers, checks for end-of-file conditions (`62 82` or short length), and appends `90 00` upon completion.
+
+##### B. Looped `GET RESPONSE` on T=0 (`61 XX`)
+- When any command generates response data under T=0, the card returns **`61 XX`** ($XX$ indicates available bytes; $0x00$ means $\ge 256$ bytes).
+- `Pcsc.swift` automatically intercepts `61 XX` and issues `GET RESPONSE (00 C0 00 00 XX)`.
+- If subsequent bytes remain (`61 YY`), the engine loops `GET RESPONSE`, accumulating all chunks until the final status word (`90 00`).
 
 #### 4. Automatic Wrong Le (`6C XX`) Re-issue
 If a command returns status word `6C XX`, the engine automatically re-transmits the command setting $Le = XX$ ($0x00 = 256$).
 
 #### 5. Mode Toggle: Auto ISO vs. Raw Mode
-- **Auto ISO (Default):** Automatically manages command chaining, `GET RESPONSE` accumulation, and `6C XX` re-issue.
+- **Auto ISO (Default):** Automatically manages offset-aware command chaining, segmented `READ BINARY`, `GET RESPONSE` accumulation, and `6C XX` re-issue.
 - **Raw Mode:** Passes exact APDU bytes directly to the card without manipulation (crucial for raw procedure byte testing or scripts expecting raw `61 XX`).
 
 ---
