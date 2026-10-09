@@ -21,7 +21,8 @@
 4. [Software Architecture & Component Walkthrough](#4-software-architecture--component-walkthrough)
    - [Architecture Diagram (MVVM)](#architecture-diagram-mvvm)
    - [The Core Engine: `Pcsc.swift`](#the-core-engine-pcscswift)
-   - [Deep Dive: The `divideAPDU()` Parsing Algorithm](#deep-dive-the-divideapdu-parsing-algorithm)
+   - [Deep Dive: The `divideAPDU()` Parsing Algorithm & `ApduCommand`](#deep-dive-the-divideapdu-parsing-algorithm--apducommand)
+   - [Automatic Handling of Data > 254 Bytes (Command Chaining & Response Looping)](#automatic-handling-of-data--254-bytes-command-chaining--response-looping)
    - [The ViewModel: `PcscViewModel.swift`](#the-viewmodel-pcscviewmodelswift)
    - [Objective-C Bridge: `EscapeCommand` & `TransmitCommand`](#objective-c-bridge-escapecommand--transmitcommand)
    - [User Interface: SwiftUI Components](#user-interface-swiftui-components)
@@ -300,27 +301,24 @@ private func monitorCard() -> NSKeyValueObservation? {
 
 ---
 
-### Deep Dive: The `divideAPDU()` Parsing Algorithm
-Why does `Pcsc.swift` have a 40-line `divideAPDU` function?
+### Deep Dive: The `divideAPDU()` Parsing Algorithm & `ApduCommand`
+Why does `Pcsc.swift` provide `divideAPDU()` and `parseAPDU()`?
 
 ```swift
-private func divideAPDU(_ apdu: [UInt8]) -> (cla: UInt8, ins: UInt8, p1: UInt8, p2: UInt8, data: Data?, le: Int?)
+public func divideAPDU(_ apdu: [UInt8]) -> (cla: UInt8, ins: UInt8, p1: UInt8, p2: UInt8, data: Data?, le: Int?)
+public func parseAPDU(_ apdu: [UInt8]) -> ApduCommand
 ```
 
 #### The Problem:
 On iOS, for TPDU readers (like ACR38/39/40), calling `activeCard.transmit(rawBytes)` directly can fail because the underlying reader hardware expects TPDU frames (T=0/T=1), not a monolithic APDU block.
 
 #### The Solution:
-`CryptoTokenKit` offers a higher-level method:
+`CryptoTokenKit` offers a structured method:
 ```swift
 activeCard?.send(ins: ins, p1: p1, p2: p2, data: sendData, le: le, reply: { replyData, sw, error in ... })
 ```
-When you use `send(ins:p1:p2:data:le:)`, Apple's driver automatically handles:
-- T=0 command formatting.
-- Inspecting `SW1 == 0x61` and automatically sending `GET RESPONSE (00 C0 00 00 Le)`.
-- Command chaining for data longer than 255 bytes.
 
-To use this method, the code must parse the raw byte array into its constituent ISO 7816-4 parts:
+To use this method, the code parses the raw byte array into its constituent ISO 7816-4 parts via `ApduCommand`:
 
 ```
 Raw APDU Byte Array:
@@ -334,19 +332,43 @@ The algorithm checks:
 1. **Case 1 (Length == 4):** CLA, INS, P1, P2 only.
 2. **Case 2S (Length == 5):** Short APDU with expected return length (`Le = apdu[4] == 0 ? 256 : apdu[4]`). No command data.
 3. **Payload / Extended APDU (Length > 5):**
-   - If `apdu[4] != 0`: It's a standard Short APDU (`Lc = apdu[4]`). Data starts at index 5.
-   - If `apdu[4] == 0` and length >= 7: It's an Extended APDU! The length is encoded in the next two bytes (`(apdu[5] << 8) + apdu[6]`). Data starts at index 7.
+   - If `apdu[4] != 0`: Standard Short APDU (`Lc = apdu[4]`). Data starts at index 5.
+   - If `apdu[4] == 0` and length >= 7: Extended APDU! The length is encoded in the next two bytes (`(apdu[5] << 8) + apdu[6]`). Data starts at index 7.
 4. **Determines `Le` (Expected return length):**
    - If remaining bytes exist after the payload (`dataOffset + lc`), those remaining bytes represent `Le`!
 
-Finally, after receiving the response from `activeCard.send(...)`, it reconstitutes the full response APDU by re-attaching the 2-byte status word (`sw1`, `sw2`):
-```swift
-let sw1: UInt8 = UInt8(sw >> 8 & 0xFF)
-let sw2: UInt8 = UInt8(sw & 0xFF)
-var responseData = Data()
-responseData.append(replyData ?? Data())
-responseData.append(Data([sw1, sw2]))
-```
+---
+
+### Automatic Handling of Data > 254 Bytes (Command Chaining & Response Looping)
+
+A common challenge in smart card engineering is transmitting or retrieving payloads exceeding **254 / 255 bytes**.
+
+#### 1. Why 254 Bytes?
+- **ISO 7816-3 T=0:** The TPDU parameter $P3$ is strictly 1 byte ($0 - 255$). There is no native extended APDU in T=0.
+- **ISO 7816-3 T=1:** The Information Field length ($IFSC / IFSD$) negotiated per $I$-block is typically at most **254 bytes**.
+- **ISO 7816-4 Short APDU:** Maximum $Lc = 255$ bytes, maximum $Le = 256$ bytes ($0x00$).
+
+#### 2. Writing Data > 254 Bytes (ISO 7816-4 Command Chaining)
+When `autoIsoHandling` is enabled and the payload exceeds 254 bytes, `Pcsc.swift` utilizes `Pcsc.splitForCommandChaining(...)`:
+1. Slices the data into safe blocks of $\le 254$ bytes.
+2. **Intermediate blocks ($0 \dots N-2$):** Sets **Bit 5 of the CLA byte** (`CLA |= 0x10`), signaling *"not the last command of a chain"*.
+3. **Final block ($N-1$):** Clears Bit 5 of CLA (`CLA &= ~0x10`), signaling *"last command of a chain"*, and attaches the original $Le$.
+4. Logs each intermediate block step: `[Chain 1/N] ...` in the datalog.
+5. Verifies each intermediate block receives status `90 00` before sending the subsequent block.
+
+#### 3. Reading Data > 254 Bytes (Looped `GET RESPONSE` on T=0)
+Under T=0:
+1. When a command produces response data, the card returns **`61 XX`** ($XX$ indicates available bytes; $0x00$ means $\ge 256$ bytes).
+2. `Pcsc.swift` automatically intercepts `61 XX` and issues `GET RESPONSE (00 C0 00 00 XX)`.
+3. If the card still has more bytes and returns another `61 YY`, the engine continues issuing `GET RESPONSE`, accumulating the returned data chunks until the final status word (`90 00`) is returned.
+4. Re-assembles the accumulated data buffer and appends the final status word transparently.
+
+#### 4. Automatic Wrong Le (`6C XX`) Re-issue
+If a command returns status word `6C XX`, the engine automatically re-transmits the command setting $Le = XX$ ($0x00 = 256$).
+
+#### 5. Mode Toggle: Auto ISO vs. Raw Mode
+- **Auto ISO (Default):** Automatically manages command chaining, `GET RESPONSE` accumulation, and `6C XX` re-issue.
+- **Raw Mode:** Passes exact APDU bytes directly to the card without manipulation (crucial for raw procedure byte testing or scripts expecting raw `61 XX`).
 
 ---
 
@@ -370,6 +392,7 @@ The UI is cleanly divided into modular, previewable SwiftUI views:
   - Auto-formats input: `newValue.uppercased().filter("0123456789ABCDEF".contains)`.
   - Smart command routing: If the input starts with `"E0"`, it routes to `transferEscapeCommand()`; otherwise, it routes to `transferApdu()`.
   - Loop configuration: Adds `Loop#:` with automated validation (defaults to `1`, automatically resets `0` or negative values to `1`) to control batch script repetition.
+  - Auto ISO-7816 Toggle: Allows switching between **Auto Mode** (automatic command chaining & GET RESPONSE looping) and **Raw Mode** (direct byte transmission).
 - **`StateView.swift`:** Displays card status (Present, Removed, Probing), ATR hex string, and active protocol (T0, T1).
 - **`LogView.swift`:** Scrollable terminal log with auto-scroll using `ScrollViewReader` and `proxy.scrollTo(bottomID)`.
 - **`ToastView.swift`:** Animated floating feedback pill for user alerts.

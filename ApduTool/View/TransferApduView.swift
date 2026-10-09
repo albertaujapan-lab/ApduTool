@@ -70,6 +70,16 @@ struct TransferApduView: View {
                         }
                     Spacer()
                 }
+                HStack {
+                    Text("Auto ISO:").frame(width: screenWidth * 0.15, alignment: .trailing)
+                    Toggle("", isOn: $pcsc.autoIsoHandling)
+                        .labelsHidden()
+                        .toggleStyle(.switch)
+                    Text(pcsc.autoIsoHandling ? "Auto (Chaining & GET RESPONSE)" : "Raw (Direct TPDU)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
             } else {
                 VStack {
                     Text("Send APDU:")
@@ -122,6 +132,17 @@ struct TransferApduView: View {
                         .onSubmit {
                             pcsc.validateLoopOnEnd()
                         }
+                    HStack {
+                        Text("Auto ISO-7816:")
+                        Toggle("", isOn: $pcsc.autoIsoHandling)
+                            .labelsHidden()
+                            .toggleStyle(.switch)
+                        Text(pcsc.autoIsoHandling ? "Auto (Chaining/Le)" : "Raw Mode")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .frame(width: screenWidth * 9 / 10, alignment: .leading)
                 }
             }
         }

@@ -41,6 +41,11 @@ class PcscViewModel: NSObject, ObservableObject {
     @Published var showSelectFile: Bool = false
     @Published var loop: String = "1"
     @Published var datalog: String = ""
+    @Published var autoIsoHandling: Bool = true {
+        didSet {
+            pcsc.autoIsoHandling = autoIsoHandling
+        }
+    }
     var currentLoop: Int = 0
     var totalLoops: Int = 1
     var passCount: Int = 0
@@ -61,6 +66,10 @@ class PcscViewModel: NSObject, ObservableObject {
     override init() {
         super.init()
         slotNames = pcsc.getSlotNames()
+        pcsc.autoIsoHandling = autoIsoHandling
+        pcsc.onLogMessage = { [weak self] msg in
+            self?.addMessage(text: msg)
+        }
         pcsc.setUpdateCardSlots(self.updateCardSlots)
     }
     
@@ -177,7 +186,7 @@ class PcscViewModel: NSObject, ObservableObject {
         recvData = ""
         status = ""
         addMessage(text: "< \(sendData)")
-        pcsc.transferApdu(data: Data(apdu.sendData), getResponse: getResponse)
+        pcsc.transferApdu(data: Data(apdu.sendData), autoIsoHandling: autoIsoHandling, getResponse: getResponse)
     }
     
     func transferEscapeCommand() {
@@ -377,7 +386,7 @@ class PcscViewModel: NSObject, ObservableObject {
                 status = ""
                 addMessage(text: "< \(sendData)")
                 line += 1
-                pcsc.transferApdu(data: Data(apdu.sendData), getResponse: getScriptResponse)
+                pcsc.transferApdu(data: Data(apdu.sendData), autoIsoHandling: autoIsoHandling, getResponse: getScriptResponse)
             } else {
                 let sendData = currentLine.uppercased()
                 apdu.sendData = sendData.hexBytes
@@ -385,7 +394,7 @@ class PcscViewModel: NSObject, ObservableObject {
                 status = ""
                 addMessage(text: "< \(sendData)")
                 line += 1
-                pcsc.transferApdu(data: Data(apdu.sendData)) { [weak self] data, error in
+                pcsc.transferApdu(data: Data(apdu.sendData), autoIsoHandling: autoIsoHandling) { [weak self] data, error in
                     guard let self = self else { return }
                     DispatchQueue.main.async {
                         if let error = error {
