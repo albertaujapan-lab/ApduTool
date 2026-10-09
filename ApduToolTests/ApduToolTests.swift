@@ -333,32 +333,33 @@ final class ApduToolTests: XCTestCase {
 
     // MARK: - Log Rolling & Datalog Preservation Tests
 
-    func testLogDisplayLineLimitingTo1000Lines() throws {
+    func testLogDisplayCharacterLimitingTo10000Characters() throws {
         let vm = PcscViewModel()
         vm.appendMessage(text: "") // Reset log state
         XCTAssertEqual(vm.message, "")
         XCTAssertEqual(vm.datalog, "")
 
-        // Append 1200 log messages
-        for i in 1...1200 {
-            vm.appendMessage(text: "Test line \(i)")
+        // Append 20 large log messages of ~1000 characters each (total > 20,000 characters)
+        for i in 1...20 {
+            let payload = String(repeating: "X", count: 980)
+            vm.appendMessage(text: "Entry #\(i): \(payload)")
         }
 
-        // Verify that message is capped at exactly 1000 lines
-        let messageLines = vm.message.components(separatedBy: "\n").filter { !$0.isEmpty }
-        XCTAssertEqual(messageLines.count, 1000)
+        // Verify that message character count is strictly capped at <= 10000 characters
+        XCTAssertLessThanOrEqual(vm.message.count, 10000)
+        XCTAssertGreaterThan(vm.message.count, 8000)
 
-        // Verify message contains only the LATEST lines (201 through 1200)
-        XCTAssertTrue(messageLines.first?.contains("Test line 201") == true)
-        XCTAssertTrue(messageLines.last?.contains("Test line 1200") == true)
-        XCTAssertFalse(vm.message.contains("Test line 1\n"))
-        XCTAssertFalse(vm.message.contains("Test line 200\n"))
+        // Verify message contains only the LATEST entries (e.g. Entry #20, Entry #19)
+        XCTAssertTrue(vm.message.contains("Entry #20:"))
+        XCTAssertTrue(vm.message.contains("Entry #19:"))
+        // Verify earliest entries have rolled off the UI display
+        XCTAssertFalse(vm.message.contains("Entry #1:"))
+        XCTAssertFalse(vm.message.contains("Entry #2:"))
 
-        // Verify that datalog preserves ALL 1200 lines across the entire run
-        let datalogLines = vm.datalog.components(separatedBy: "\n").filter { !$0.isEmpty }
-        XCTAssertEqual(datalogLines.count, 1200)
-        XCTAssertTrue(datalogLines.first?.contains("Test line 1") == true)
-        XCTAssertTrue(datalogLines.last?.contains("Test line 1200") == true)
+        // Verify datalog preserves ALL 20 entries (all > 20,000 characters)
+        XCTAssertGreaterThan(vm.datalog.count, 20000)
+        XCTAssertTrue(vm.datalog.contains("Entry #1:"))
+        XCTAssertTrue(vm.datalog.contains("Entry #20:"))
     }
 
     func testLogResetClearsBothDisplayAndDatalog() throws {

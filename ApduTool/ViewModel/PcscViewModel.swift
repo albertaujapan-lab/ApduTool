@@ -98,8 +98,7 @@ class PcscViewModel: NSObject, ObservableObject {
         }
     }
     
-    private var displayLines: [String] = []
-    public let maxDisplayLines: Int = 1000
+    public let maxDisplayCharacters: Int = 10000
 
     private static let logDateFormatter: DateFormatter = {
         let df = DateFormatter()
@@ -126,14 +125,17 @@ class PcscViewModel: NSObject, ObservableObject {
             // 1. datalog maintains the complete history of all loops for saving
             datalog.append(logEntry)
             
-            // 2. message only maintains the latest maxDisplayLines (1000 lines) for UI display performance
-            displayLines.append(logEntry)
-            if displayLines.count > maxDisplayLines {
-                displayLines.removeFirst(displayLines.count - maxDisplayLines)
+            // 2. message only maintains the latest characters (up to maxDisplayCharacters = 10000) for UI display performance
+            message.append(logEntry)
+            if message.count > maxDisplayCharacters {
+                let excess = message.count - maxDisplayCharacters
+                var slice = message.dropFirst(excess)
+                if let newline = slice.firstIndex(of: "\n") {
+                    slice = slice[slice.index(after: newline)...]
+                }
+                message = String(slice)
             }
-            message = displayLines.joined()
         } else {
-            displayLines.removeAll()
             message = ""
             datalog = ""
         }
